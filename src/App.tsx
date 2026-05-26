@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router"
+import { AIAssistantPage } from "./ai-assistant/pages/AIAssistantPage"
 import { AnimalsPage } from "./animals/pages/AnimalsPage"
 import { AuthForm } from "./auth/pages/AuthPage"
 import { CampaignsPage } from "./campaigns/pages/CampaignsPage"
@@ -21,6 +22,7 @@ function App() {
         <Route path="/campaigns" element={<CampaignsPage />} />
         <Route path="/staff" element={<StaffPage />} />
         <Route path="/inventory" element={<InventoryPage />} />
+        <Route path="/ai-assistant" element={<AIAssistantPage />} />
       </Route>
     </Routes>
   )
