@@ -4,6 +4,7 @@ import { AuthForm } from "./auth/pages/AuthPage"
 import { CampaignsPage } from "./campaigns/pages/CampaignsPage"
 import { DashboardPage } from "./dashboard/pages/DashboardPage"
 import { InventoryPage } from "./inventory/pages/InventoryPage"
+import { MonitoringPage } from "./monitoring/pages/MonitoringPage"
 import { PrivateRoute } from "./shared/pages/PrivateRoute"
 import { StablesPage } from "./stables/pages/StablesPage"
 import { StaffPage } from "./staff/pages/StaffPage"
@@ -21,6 +22,7 @@ function App() {
         <Route path="/campaigns" element={<CampaignsPage />} />
         <Route path="/staff" element={<StaffPage />} />
         <Route path="/inventory" element={<InventoryPage />} />
+        <Route path="/monitoring" element={<MonitoringPage />} />
       </Route>
     </Routes>
   )

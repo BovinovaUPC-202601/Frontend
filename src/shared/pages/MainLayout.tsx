@@ -6,6 +6,7 @@ import CabinIcon from '@mui/icons-material/Cabin';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 
 export function MainLayout() {
     const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -46,6 +47,11 @@ export function MainLayout() {
                     <NavLink to="/inventory" className={linkClass}>
                         <InventoryIcon className="w-5 h-auto" />
                         <span>Inventario</span>
+                    </NavLink>
+
+                    <NavLink to="/monitoring" className={linkClass}>
+                        <MonitorHeartIcon className="w-5 h-auto" />
+                        <span>Monitoreo IoT</span>
                     </NavLink>
                 </div>
             </AppBar >
