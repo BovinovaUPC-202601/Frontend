@@ -7,6 +7,7 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 
 export function MainLayout() {
     const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -52,6 +53,11 @@ export function MainLayout() {
                     <NavLink to="/monitoring" className={linkClass}>
                         <MonitorHeartIcon className="w-5 h-auto" />
                         <span>Monitoreo IoT</span>
+                    </NavLink>
+
+                    <NavLink to="/alerts" className={linkClass}>
+                        <NotificationsIcon className="w-5 h-auto" />
+                        <span>Alertas</span>
                     </NavLink>
                 </div>
             </AppBar >
