@@ -6,81 +6,82 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { useGlobalStore } from '../../shared/stores/global-store';
-import { useCampaignsStore } from '../stores/campaigns-store';
+import type { Campaign } from '../model/campaign';
 
-export function AddCampaignDialog() {
-    const { isOpenModal, toggleModal, newCampaign, setNewCampaign, resetNewCampaign } = useCampaignsStore();
-    const { addCampaign } = useGlobalStore();
-    const [validationError, setValidationError] = useState<string>("");
+interface EditCampaignDialogProps {
+    campaign: Campaign;
+    open: boolean;
+    onClose: () => void;
+}
+
+export function EditCampaignDialog({ campaign, open, onClose }: EditCampaignDialogProps) {
+    const { updateCampaign } = useGlobalStore();
+
+    const [name, setName] = useState(campaign.name ?? '');
+    const [description, setDescription] = useState(campaign.description ?? '');
+    const [startDate, setStartDate] = useState<Date | undefined>(campaign.startDate);
+    const [endDate, setEndDate] = useState<Date | undefined>(campaign.endDate);
+    const [validationError, setValidationError] = useState('');
 
     const handleClose = () => {
-        resetNewCampaign();
-        setValidationError("");
-        toggleModal();
+        setValidationError('');
+        onClose();
     };
 
     const handleSave = async () => {
-        if (!newCampaign.name?.trim() || !newCampaign.description?.trim() ||
-            !newCampaign.startDate || !newCampaign.endDate) {
-            setValidationError("Completa todos los campos");
+        if (!name.trim() || !description.trim() || !startDate || !endDate) {
+            setValidationError('Completa todos los campos');
             return;
         }
 
-        if (newCampaign.startDate && newCampaign.endDate &&
-            newCampaign.startDate > newCampaign.endDate) {
-            setValidationError("La fecha de inicio no puede ser posterior a la fecha de fin");
+        // Evita guardar campañas con rangos de fechas inconsistentes.
+        if (startDate > endDate) {
+            setValidationError('La fecha de inicio no puede ser posterior a la fecha de fin');
             return;
         }
 
-        setValidationError("");
-        await addCampaign(newCampaign);
+        setValidationError('');
+        await updateCampaign({ ...campaign, name, description, startDate, endDate });
         handleClose();
     };
 
     return (
-        <Dialog open={isOpenModal} onClose={handleClose}  >
-            <DialogTitle className='font-mulish'>Registrar campaña</DialogTitle>
+        <Dialog open={open} onClose={handleClose}>
+            <DialogTitle className='font-mulish'>Editar campaña</DialogTitle>
             <DialogContent className='font-mulish flex flex-col gap-5'>
                 <div className="flex flex-col gap-2">
-                    <label htmlFor="name">Nombre</label>
+                    <label htmlFor="edit-name">Nombre</label>
                     <input
-                        id="name"
+                        id="edit-name"
                         type="text"
                         autoComplete='off'
                         placeholder="Campaña de vacunación"
                         className="focus:outline-none border-1 border-neutral-300 px-3 py-2 rounded-sm"
-                        value={newCampaign.name || ""}
-                        onChange={(e) => setNewCampaign({ name: e.target.value })}
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                     />
 
-                    <label htmlFor="description">Descripcion</label>
+                    <label htmlFor="edit-description">Descripción</label>
                     <input
-                        id="description"
+                        id="edit-description"
                         type="text"
                         autoComplete='off'
                         placeholder="Vacunación contra la gripe"
                         className="focus:outline-none border-1 border-neutral-300 px-3 py-2 rounded-sm"
-                        value={newCampaign.description || ""}
-                        onChange={(e) => setNewCampaign({ description: e.target.value })}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
                     />
+
                     <div className='flex gap-5 mt-5'>
                         <DatePicker
                             label="Fecha de inicio"
-                            value={newCampaign.startDate ? dayjs(newCampaign.startDate) : null}
-                            onChange={(date) => {
-                                if (date) {
-                                    setNewCampaign({ startDate: date.toDate() });
-                                }
-                            }}
+                            value={startDate ? dayjs(startDate) : null}
+                            onChange={(date) => { if (date) setStartDate(date.toDate()); }}
                         />
                         <DatePicker
                             label="Fecha de fin"
-                            value={newCampaign.endDate ? dayjs(newCampaign.endDate) : null}
-                            onChange={(date) => {
-                                if (date) {
-                                    setNewCampaign({ endDate: date.toDate() });
-                                }
-                            }}
+                            value={endDate ? dayjs(endDate) : null}
+                            onChange={(date) => { if (date) setEndDate(date.toDate()); }}
                         />
                     </div>
                 </div>
@@ -99,9 +100,9 @@ export function AddCampaignDialog() {
                     className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white"
                     onClick={handleSave}
                 >
-                    Añadir
+                    Guardar
                 </button>
             </DialogActions>
         </Dialog>
-    )
+    );
 }

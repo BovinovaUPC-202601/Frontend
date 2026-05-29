@@ -19,6 +19,15 @@ export class CampaignService {
         return await http.post<Campaign>(this.endpoint, data);
     }
 
+    async updateCampaign(campaign: Campaign) {
+        const data = {
+            ...campaign,
+            startDate: dayjs(campaign.startDate).format('YYYY-MM-DD'),
+            endDate: dayjs(campaign.endDate).format('YYYY-MM-DD'),
+        };
+        return await http.put<Campaign>(`${this.endpoint}/${campaign.id}`, data);
+    }
+
     async deleteCampaign(campaign: Campaign) {
         return await http.delete(`${this.endpoint}/${campaign.id}`);
     }
