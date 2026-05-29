@@ -14,6 +14,16 @@ export function AddAnimalDialog() {
     const { addAnimal, stables } = useGlobalStore();
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [validationError, setValidationError] = useState<string>("");
+    const hasRequiredFields =
+        Boolean(newAnimal.name?.trim()) &&
+        Boolean(newAnimal.gender) &&
+        Boolean(newAnimal.birthDate) &&
+        Boolean(newAnimal.breed?.trim()) &&
+        Boolean(newAnimal.stableId) &&
+        newAnimal.bovineImg instanceof File;
+
+    const isBirthDateValid = newAnimal.birthDate ? !dayjs(newAnimal.birthDate).isAfter(dayjs()) : false;
+    const canSubmit = hasRequiredFields && isBirthDateValid;
 
     const handleClose = () => {
         resetNewAnimal();
@@ -22,6 +32,11 @@ export function AddAnimalDialog() {
     };
 
     const handleSave = async () => {
+        if (!(newAnimal.bovineImg instanceof File)) {
+            setValidationError("Debes seleccionar una imagen para el animal");
+            return;
+        }
+
         if (!newAnimal.name?.trim() || !newAnimal.gender || !newAnimal.birthDate ||
             !newAnimal.breed?.trim() || !newAnimal.stableId) {
             setValidationError("Completa todos los campos");
@@ -64,6 +79,7 @@ export function AddAnimalDialog() {
                         accept="image/*"
                         onChange={(e) => {
                             if (e.target.files?.[0]) {
+                                setValidationError("");
                                 setNewAnimal({ bovineImg: e.target.files[0] });
                             }
                         }}
@@ -158,7 +174,8 @@ export function AddAnimalDialog() {
                     Cancelar
                 </button>
                 <button
-                    className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white"
+                    disabled={!canSubmit}
+                    className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500"
                     onClick={handleSave}
                 >
                     Añadir
