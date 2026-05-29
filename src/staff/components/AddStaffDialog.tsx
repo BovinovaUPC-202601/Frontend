@@ -30,7 +30,7 @@ export function AddStaffDialog() {
 
     return (
         <Dialog open={isOpenModal} onClose={handleClose}  >
-            <DialogTitle className='font-mulish'>Registar personal</DialogTitle>
+            <DialogTitle className='font-mulish'>Registrar personal</DialogTitle>
             <DialogContent className='font-mulish flex flex-col gap-5'>
                 <div className="flex flex-col gap-2">
                     <label htmlFor="name">Nombre</label>
