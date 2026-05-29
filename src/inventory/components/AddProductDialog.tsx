@@ -13,6 +13,7 @@ export function AddProductDialog() {
     const { addProduct, categories } = useGlobalStore();
     const [selectedCategoryName, setSelectedCategoryName] = useState<string>("");
     const [validationError, setValidationError] = useState<string>("");
+    const canSubmit = Boolean(newProduct.name?.trim()) && newProduct.quantity > 0 && Boolean(newProduct.categoryId);
 
     const handleClose = () => {
         resetNewProduct();
@@ -46,7 +47,10 @@ export function AddProductDialog() {
                         placeholder="Trigo"
                         className="focus:outline-none border-1 border-neutral-300 px-3 py-2 rounded-sm"
                         value={newProduct.name || ""}
-                        onChange={(e) => setNewProduct({ name: e.target.value })}
+                        onChange={(e) => {
+                            setValidationError("");
+                            setNewProduct({ name: e.target.value });
+                        }}
                     />
                     <label htmlFor="limit">Cantidad</label>
                     <input
@@ -59,6 +63,7 @@ export function AddProductDialog() {
                         className="focus:outline-none border-1 border-neutral-300 px-3 py-2 rounded-sm"
                         value={newProduct.quantity === 0 ? "" : newProduct.quantity}
                         onChange={(e) => {
+                            setValidationError("");
                             let val = e.target.value;
 
                             // Eliminar todo lo que no sea dígito
@@ -77,6 +82,7 @@ export function AddProductDialog() {
                         id="category"
                         value={selectedCategoryName}
                         onChange={(e) => {
+                            setValidationError("");
                             const name = e.target.value;
                             setSelectedCategoryName(name);
 
@@ -116,7 +122,8 @@ export function AddProductDialog() {
                     Cancelar
                 </button>
                 <button
-                    className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white"
+                    disabled={!canSubmit}
+                    className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500"
                     onClick={handleSave}
                 >
                     Añadir
