@@ -10,6 +10,7 @@ export function AddCategoryDialog() {
     const { isOpenModalCategory, toggleModalCategory, newCategory, setNewCategory, resetNewCategory } = useInventoryStore();
     const { addCategory } = useGlobalStore();
     const [validationError, setValidationError] = useState<string>("");
+    const canSubmit = Boolean(newCategory.name?.trim());
 
     const handleClose = () => {
         resetNewCategory();
@@ -41,7 +42,10 @@ export function AddCategoryDialog() {
                         placeholder="Vacunas"
                         className="focus:outline-none border-1 border-neutral-300 px-3 py-2 rounded-sm"
                         value={newCategory.name || ""}
-                        onChange={(e) => setNewCategory({ name: e.target.value })}
+                        onChange={(e) => {
+                            setValidationError("");
+                            setNewCategory({ name: e.target.value });
+                        }}
                     />
                 </div>
                 {validationError && (
@@ -56,7 +60,8 @@ export function AddCategoryDialog() {
                     Cancelar
                 </button>
                 <button
-                    className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white"
+                    disabled={!canSubmit}
+                    className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500"
                     onClick={handleSave}
                 >
                     Añadir

@@ -10,6 +10,7 @@ export function AddStableDialog() {
     const { isOpenModal, toggleModal, newStable, setNewStable, resetNewStable } = useStableStore();
     const { addStable } = useGlobalStore();
     const [validationError, setValidationError] = useState<string>("");
+    const canSubmit = Boolean(newStable.name?.trim()) && newStable.limit > 0;
 
     const handleClose = () => {
         resetNewStable();
@@ -41,7 +42,10 @@ export function AddStableDialog() {
                         placeholder="Establo Principal"
                         className="focus:outline-none border-1 border-neutral-300 px-3 py-2 rounded-sm"
                         value={newStable.name || ""}
-                        onChange={(e) => setNewStable({ name: e.target.value })}
+                        onChange={(e) => {
+                            setValidationError("");
+                            setNewStable({ name: e.target.value });
+                        }}
                     />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -56,6 +60,7 @@ export function AddStableDialog() {
                         className="focus:outline-none border-1 border-neutral-300 px-3 py-2 rounded-sm"
                         value={newStable.limit === 0 ? "" : newStable.limit}
                         onChange={(e) => {
+                            setValidationError("");
                             let val = e.target.value;
 
                             // Eliminar todo lo que no sea dígito
@@ -83,7 +88,8 @@ export function AddStableDialog() {
                     Cancelar
                 </button>
                 <button
-                    className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white"
+                    disabled={!canSubmit}
+                    className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500"
                     onClick={handleSave}
                 >
                     Añadir
