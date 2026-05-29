@@ -8,6 +8,7 @@ interface AuthState {
     error: string | null;
     setUser: (user: Partial<User>) => void;
     setError: (error: string | null) => void;
+    logout: () => void;
     login: (onSuccess: () => void) => Promise<void>;
     register: (confirmPassword: string, onSuccess: () => void) => Promise<void>;
 }
@@ -17,6 +18,13 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
     error: null,
     setUser: (user: Partial<User>) => set(state => { state.user = { ...state.user, ...user }; }),
     setError: (error: string | null) => set(state => { state.error = error; }),
+    logout: () => {
+        localStorage.removeItem("token");
+        set(state => {
+            state.user = new User();
+            state.error = null;
+        });
+    },
     login: async (onSuccess) => {
         try {
             const { user } = get();
