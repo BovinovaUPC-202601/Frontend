@@ -37,6 +37,7 @@ interface GlobalState {
     campaigns: Campaign[];
     fetchCampaigns: () => Promise<void>;
     addCampaign: (campaign: Campaign) => Promise<void>;
+    updateCampaign: (campaign: Campaign) => Promise<void>;
     deleteCampaign: (campaign: Campaign) => Promise<void>;
 
     // Staff
@@ -195,6 +196,19 @@ export const useGlobalStore = create(immer<GlobalState>((set) => ({
             if (res.data) {
                 set((state) => {
                     state.campaigns.push(new Campaign(res.data));
+                });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    },
+    updateCampaign: async (campaign) => {
+        try {
+            const res = await campaignService.updateCampaign(campaign);
+            if (res.data) {
+                set((state) => {
+                    const index = state.campaigns.findIndex((c) => c.id === campaign.id);
+                    if (index !== -1) state.campaigns[index] = new Campaign(res.data);
                 });
             }
         } catch (error) {
