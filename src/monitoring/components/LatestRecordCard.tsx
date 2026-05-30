@@ -5,8 +5,11 @@ import ThermostatIcon from "@mui/icons-material/Thermostat";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import type { HealthRecord } from "../model/health-record";
 import { BOVINE_RANGES } from "../model/health-record";
+
+dayjs.extend(utc);
 
 interface Props {
     record: HealthRecord;
@@ -44,7 +47,7 @@ export function LatestRecordCard({ record }: Props) {
                 </div>
 
                 <p className="text-xs text-neutral-400 mt-3">
-                    {dayjs(record.recordedAt).format('DD/MM/YYYY HH:mm:ss')} · Dispositivo: {record.deviceId}
+                    {dayjs.utc(record.recordedAt).local().format('DD/MM/YYYY HH:mm:ss')} · Dispositivo: {record.deviceId}
                 </p>
 
                 <p className="text-xs text-neutral-500 mt-1">
