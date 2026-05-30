@@ -1,5 +1,5 @@
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "../store/auth-store";
@@ -10,6 +10,7 @@ export function RegisterForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -85,16 +86,23 @@ export function RegisterForm() {
 
             {error && <p className="text-red-500">{error}</p>}
 
-            <Button
-                variant="contained"
-                className="bg-brand-default"
-                sx={{ textTransform: "none" }}
-                onClick={() => register(confirmPassword, () => navigate('/dashboard'))}
+            <button
+                type="button"
+                disabled={isSubmitting}
+                className="cursor-pointer rounded-sm flex items-center justify-center gap-2 px-2 py-1 bg-brand-default text-white disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500"
+                onClick={async () => {
+                    setIsSubmitting(true);
+                    try {
+                        await register(confirmPassword, () => navigate('/dashboard'));
+                    } finally {
+                        setIsSubmitting(false);
+                    }
+                }}
             >
                 <span className="font-mulish text-lg">
-                    Registrarse
+                    {isSubmitting ? <CircularProgress size={16} color="inherit" /> : "Registrarse"}
                 </span>
-            </Button>
+            </button>
         </div>
     );
 }

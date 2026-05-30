@@ -2,6 +2,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useState } from 'react';
 import { useGlobalStore } from '../../shared/stores/global-store';
 import { useStaffStore } from '../stores/staff-store';
@@ -10,6 +11,8 @@ export function AddStaffDialog() {
     const { isOpenModal, toggleModal, newStaff, setNewStaff, resetNewStaff } = useStaffStore();
     const { addStaff } = useGlobalStore();
     const [validationError, setValidationError] = useState<string>("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const canSubmit = Boolean(newStaff.name?.trim());
 
     const handleClose = () => {
         resetNewStaff();
@@ -24,8 +27,13 @@ export function AddStaffDialog() {
         }
 
         setValidationError("");
-        await addStaff(newStaff);
-        handleClose();
+        setIsSubmitting(true);
+        try {
+            await addStaff(newStaff);
+            handleClose();
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -56,10 +64,11 @@ export function AddStaffDialog() {
                     Cancelar
                 </button>
                 <button
-                    className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white"
+                    disabled={!canSubmit || isSubmitting}
+                    className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500"
                     onClick={handleSave}
                 >
-                    Añadir
+                    {isSubmitting ? <CircularProgress size={16} color="inherit" /> : "Añadir"}
                 </button>
             </DialogActions>
         </Dialog>

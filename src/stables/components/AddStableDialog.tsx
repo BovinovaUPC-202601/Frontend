@@ -2,6 +2,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
+import CircularProgress from "@mui/material/CircularProgress";
 import { useState } from "react";
 import { useGlobalStore } from "../../shared/stores/global-store";
 import { useStableStore } from "../stores/stable-store";
@@ -11,6 +12,7 @@ export function AddStableDialog() {
     useStableStore();
   const { addStable } = useGlobalStore();
   const [validationError, setValidationError] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const canSubmit =
     Boolean(newStable.name?.trim()) && (newStable.limit ?? 0) > 0;
 
@@ -27,8 +29,13 @@ export function AddStableDialog() {
     }
 
     setValidationError("");
-    await addStable(newStable);
-    handleClose();
+    setIsSubmitting(true);
+    try {
+      await addStable(newStable);
+      handleClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -91,11 +98,11 @@ export function AddStableDialog() {
           Cancelar
         </button>
         <button
-          disabled={!canSubmit}
+          disabled={!canSubmit || isSubmitting}
           className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500"
           onClick={handleSave}
         >
-          Añadir
+          {isSubmitting ? <CircularProgress size={16} color="inherit" /> : "Añadir"}
         </button>
       </DialogActions>
     </Dialog>
