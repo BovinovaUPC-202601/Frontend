@@ -6,7 +6,7 @@ import { useAuthStore } from "../store/auth-store";
 
 export function LoginForm() {
     const navigate = useNavigate();
-    const { user, login, setUser, error } = useAuthStore();
+    const { user, login, setUser, error, isLoading } = useAuthStore();
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -53,19 +53,23 @@ export function LoginForm() {
 
             <button
                 type="button"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isLoading}
                 className="cursor-pointer rounded-sm flex items-center justify-center gap-2 px-2 py-1 bg-brand-default text-white disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500"
                 onClick={async () => {
                     setIsSubmitting(true);
                     try {
-                        await login(() => navigate('/dashboard'));
+                        const success = await login();
+                        if (success) {
+                            navigate("/dashboard", { replace: true });
+                        }
                     } finally {
                         setIsSubmitting(false);
                     }
                 }}
+                aria-busy={isSubmitting || isLoading}
             >
                 <span className="font-mulish text-lg">
-                    {isSubmitting ? <CircularProgress size={16} color="inherit" /> : "Iniciar sesión"}
+                    {isSubmitting || isLoading ? <CircularProgress size={16} color="inherit" /> : "Iniciar sesión"}
                 </span>
             </button>
         </div>

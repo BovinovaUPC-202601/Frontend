@@ -1,19 +1,19 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import { useState } from 'react';
-import { useGlobalStore } from "../../shared/stores/global-store";
-import type { Product } from '../model/Product';
-import dayjs from 'dayjs';
-import { EditProductDialog } from './EditProductDialog';
+import { useGlobalStore } from '../../shared/stores/global-store';
+import type { Category } from '../model/Category';
+import { EditCategoryDialog } from './EditCategoryDialog';
 
-interface ProductCardProps {
-    product: Product;
+interface CategoryCardProps {
+    category: Category;
+    productCount: number;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
-    const { deleteProduct } = useGlobalStore();
+export function CategoryCard({ category, productCount }: CategoryCardProps) {
+    const { deleteCategory } = useGlobalStore();
     const [isEditOpen, setIsEditOpen] = useState(false);
 
     return (
@@ -21,15 +21,12 @@ export function ProductCard({ product }: ProductCardProps) {
             <Card className="bg-neutral-100 font-mulish border-1 border-neutral-300 shadow-none rounded-md">
                 <CardContent>
                     <div className="flex justify-between items-center gap-2">
-                        <div className="flex flex-col justify-center gap-2">
-                            <span className="text-lg font-semibold text-neutral-800">
-                                {product.name}
+                        <div className="flex flex-col gap-1">
+                            <span className="text-lg font-semibold text-neutral-800 py-1 px-2 w-full border-1 border-transparent">
+                                {category.name}
                             </span>
-                            <span className="text-sm text-neutral-500">
-                                Cantidad: {product.quantity}{product.unit ? ` ${product.unit}` : ''}
-                            </span>
-                            <span className="text-sm text-neutral-500">
-                                Fecha de vencimiento: {product.expirationDate ? dayjs(product.expirationDate).format("DD/MM/YYYY") : "N/A"}
+                            <span className="text-sm text-neutral-500 py-1 px-2 w-full border-1 border-transparent">
+                                Productos registrados: {productCount}
                             </span>
                         </div>
                         <div className="flex flex-col gap-2 items-center">
@@ -39,15 +36,15 @@ export function ProductCard({ product }: ProductCardProps) {
                             />
                             <DeleteIcon
                                 className="w-6 h-auto cursor-pointer text-neutral-500 hover:text-state-error"
-                                onClick={() => deleteProduct(product)}
+                                onClick={() => deleteCategory(category)}
                             />
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            <EditProductDialog
-                product={product}
+            <EditCategoryDialog
+                category={category}
                 open={isEditOpen}
                 onClose={() => setIsEditOpen(false)}
             />

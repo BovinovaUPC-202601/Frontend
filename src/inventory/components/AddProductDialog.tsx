@@ -84,6 +84,19 @@ export function AddProductDialog() {
                             setNewProduct({ quantity: val === "" ? 0 : Number(val) });
                         }}
                     />
+                    <label htmlFor="unit">Unidad (opcional)</label>
+                    <input
+                        id="unit"
+                        type="text"
+                        autoComplete='off'
+                        placeholder="kg, cajas, litros"
+                        className="focus:outline-none border-1 border-neutral-300 px-3 py-2 rounded-sm"
+                        value={newProduct.unit || ""}
+                        onChange={(e) => {
+                            setValidationError("");
+                            setNewProduct({ unit: e.target.value });
+                        }}
+                    />
                     <label htmlFor="category">Categoría</label>
                     <select
                         id="category"
