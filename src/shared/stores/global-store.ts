@@ -18,6 +18,7 @@ interface GlobalState {
     // Dashboard
     info: Info;
     fetchInfo: () => Promise<void>;
+    loadAppData: () => Promise<void>;
 
     // Animals
     animals: Animal[];
@@ -51,14 +52,16 @@ interface GlobalState {
     categories: Category[];
     fetchCategories: () => Promise<void>;
     addCategory: (category: Category) => Promise<void>;
+    updateCategory: (category: Category) => Promise<void>;
     deleteCategory: (category: Category) => Promise<void>;
     products: Product[];
     fetchProducts: () => Promise<void>;
     addProduct: (product: Product) => Promise<void>;
+    updateProduct: (product: Product) => Promise<void>;
     deleteProduct: (product: Product) => Promise<void>;
 }
 
-export const useGlobalStore = create(immer<GlobalState>((set) => ({
+export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
     // Dashboard
     info: new Info(),
     fetchInfo: async () => {
@@ -70,6 +73,17 @@ export const useGlobalStore = create(immer<GlobalState>((set) => ({
         } catch (error) {
             console.error(error);
         }
+    },
+    loadAppData: async () => {
+        await Promise.all([
+            get().fetchInfo(),
+            get().fetchAnimals(),
+            get().fetchStables(),
+            get().fetchCampaigns(),
+            get().fetchStaff(),
+            get().fetchCategories(),
+            get().fetchProducts(),
+        ]);
     },
 
     // Animals
@@ -310,6 +324,19 @@ export const useGlobalStore = create(immer<GlobalState>((set) => ({
             console.error(error);
         }
     },
+    updateCategory: async (category) => {
+        try {
+            const res = await inventoryService.updateCategory(category);
+            if (res.data) {
+                set((state) => {
+                    const index = state.categories.findIndex((c) => c.id === category.id);
+                    if (index !== -1) state.categories[index] = new Category(res.data);
+                });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    },
     deleteCategory: async (category) => {
         try {
             const res = await inventoryService.deleteCategory(category);
@@ -339,6 +366,19 @@ export const useGlobalStore = create(immer<GlobalState>((set) => ({
             if (res.data) {
                 set(state => {
                     state.products.push(new Product(res.data));
+                });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    },
+    updateProduct: async (product) => {
+        try {
+            const res = await inventoryService.updateProduct(product);
+            if (res.data) {
+                set((state) => {
+                    const index = state.products.findIndex((p) => p.id === product.id);
+                    if (index !== -1) state.products[index] = new Product(res.data);
                 });
             }
         } catch (error) {

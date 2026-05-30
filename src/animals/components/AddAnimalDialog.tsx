@@ -3,6 +3,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Avatar from '@mui/material/Avatar';
+import CircularProgress from '@mui/material/CircularProgress';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useGlobalStore } from '../../shared/stores/global-store';
 import { useAnimalStore } from '../stores/animals-store';
@@ -14,6 +15,7 @@ export function AddAnimalDialog() {
     const { addAnimal, stables } = useGlobalStore();
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [validationError, setValidationError] = useState<string>("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const hasRequiredFields =
         Boolean(newAnimal.name?.trim()) &&
         Boolean(newAnimal.gender) &&
@@ -51,8 +53,13 @@ export function AddAnimalDialog() {
         }
 
         setValidationError("");
-        await addAnimal(newAnimal);
-        handleClose();
+        setIsSubmitting(true);
+        try {
+            await addAnimal(newAnimal);
+            handleClose();
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -174,11 +181,11 @@ export function AddAnimalDialog() {
                     Cancelar
                 </button>
                 <button
-                    disabled={!canSubmit}
+                    disabled={!canSubmit || isSubmitting}
                     className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500"
                     onClick={handleSave}
                 >
-                    Añadir
+                    {isSubmitting ? <CircularProgress size={16} color="inherit" /> : "Añadir"}
                 </button>
             </DialogActions>
         </Dialog>

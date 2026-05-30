@@ -14,6 +14,10 @@ export class InventoryService {
         return await http.post<Category>(`${this.endpoint}/categories`, category);
     }
 
+    async updateCategory(category: Category) {
+        return await http.put<Category>(`${this.endpoint}/categories/${category.id}`, category);
+    }
+
     async deleteCategory(category: Category) {
         return await http.delete<void>(`${this.endpoint}/categories/${category.id}`);
     }
@@ -24,6 +28,10 @@ export class InventoryService {
 
     async createProduct(product: Product) {
         return await http.post<Product>(`${this.endpoint}/products`, product);
+    }
+
+    async updateProduct(product: Product) {
+        return await http.put<Product>(`${this.endpoint}/products/${product.id}`, product);
     }
 
     async deleteProduct(product: Product) {

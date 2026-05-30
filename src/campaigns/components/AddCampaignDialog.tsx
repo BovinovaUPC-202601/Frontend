@@ -2,6 +2,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import CircularProgress from '@mui/material/CircularProgress';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import { useState } from 'react';
@@ -12,6 +13,11 @@ export function AddCampaignDialog() {
     const { isOpenModal, toggleModal, newCampaign, setNewCampaign, resetNewCampaign } = useCampaignsStore();
     const { addCampaign } = useGlobalStore();
     const [validationError, setValidationError] = useState<string>("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const canSubmit = Boolean(newCampaign.name?.trim()) &&
+        Boolean(newCampaign.description?.trim()) &&
+        Boolean(newCampaign.startDate) &&
+        Boolean(newCampaign.endDate);
 
     const handleClose = () => {
         resetNewCampaign();
@@ -33,8 +39,13 @@ export function AddCampaignDialog() {
         }
 
         setValidationError("");
-        await addCampaign(newCampaign);
-        handleClose();
+        setIsSubmitting(true);
+        try {
+            await addCampaign(newCampaign);
+            handleClose();
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -96,10 +107,11 @@ export function AddCampaignDialog() {
                     Cancelar
                 </button>
                 <button
-                    className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white"
+                    disabled={!canSubmit || isSubmitting}
+                    className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500"
                     onClick={handleSave}
                 >
-                    Añadir
+                    {isSubmitting ? <CircularProgress size={16} color="inherit" /> : "Añadir"}
                 </button>
             </DialogActions>
         </Dialog>

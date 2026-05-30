@@ -5,12 +5,7 @@ import { useInventoryStore } from "../stores/inventory-store";
 
 export function ProductList() {
     const { searchQuery, filteredProducts, isFiltered, categoryFilter, filterProducts } = useInventoryStore();
-    const { products, categories, fetchCategories, fetchProducts } = useGlobalStore();
-
-    useEffect(() => {
-        fetchCategories();
-        fetchProducts();
-    }, []);
+    const { products, categories } = useGlobalStore();
 
     useEffect(() => {
         if (isFiltered) {

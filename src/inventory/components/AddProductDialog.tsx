@@ -2,6 +2,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useGlobalStore } from '../../shared/stores/global-store';
 import { useInventoryStore } from '../stores/inventory-store';
 import { useState } from 'react';
@@ -13,6 +14,7 @@ export function AddProductDialog() {
     const { addProduct, categories } = useGlobalStore();
     const [selectedCategoryName, setSelectedCategoryName] = useState<string>("");
     const [validationError, setValidationError] = useState<string>("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const canSubmit = Boolean(newProduct.name?.trim()) && newProduct.quantity > 0 && Boolean(newProduct.categoryId);
 
     const handleClose = () => {
@@ -30,8 +32,13 @@ export function AddProductDialog() {
         }
 
         setValidationError("");
-        await addProduct(newProduct);
-        handleClose();
+        setIsSubmitting(true);
+        try {
+            await addProduct(newProduct);
+            handleClose();
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -75,6 +82,19 @@ export function AddProductDialog() {
                             }
 
                             setNewProduct({ quantity: val === "" ? 0 : Number(val) });
+                        }}
+                    />
+                    <label htmlFor="unit">Unidad (opcional)</label>
+                    <input
+                        id="unit"
+                        type="text"
+                        autoComplete='off'
+                        placeholder="kg, cajas, litros"
+                        className="focus:outline-none border-1 border-neutral-300 px-3 py-2 rounded-sm"
+                        value={newProduct.unit || ""}
+                        onChange={(e) => {
+                            setValidationError("");
+                            setNewProduct({ unit: e.target.value });
                         }}
                     />
                     <label htmlFor="category">Categoría</label>
@@ -122,11 +142,11 @@ export function AddProductDialog() {
                     Cancelar
                 </button>
                 <button
-                    disabled={!canSubmit}
+                    disabled={!canSubmit || isSubmitting}
                     className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500"
                     onClick={handleSave}
                 >
-                    Añadir
+                    {isSubmitting ? <CircularProgress size={16} color="inherit" /> : "Añadir"}
                 </button>
             </DialogActions>
         </Dialog>

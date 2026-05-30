@@ -2,6 +2,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useState } from 'react';
 import { useGlobalStore } from '../../shared/stores/global-store';
 import { useInventoryStore } from '../stores/inventory-store';
@@ -10,6 +11,7 @@ export function AddCategoryDialog() {
     const { isOpenModalCategory, toggleModalCategory, newCategory, setNewCategory, resetNewCategory } = useInventoryStore();
     const { addCategory } = useGlobalStore();
     const [validationError, setValidationError] = useState<string>("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const canSubmit = Boolean(newCategory.name?.trim());
 
     const handleClose = () => {
@@ -25,8 +27,13 @@ export function AddCategoryDialog() {
         }
 
         setValidationError("");
-        await addCategory(newCategory);
-        handleClose();
+        setIsSubmitting(true);
+        try {
+            await addCategory(newCategory);
+            handleClose();
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -60,11 +67,11 @@ export function AddCategoryDialog() {
                     Cancelar
                 </button>
                 <button
-                    disabled={!canSubmit}
+                    disabled={!canSubmit || isSubmitting}
                     className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500"
                     onClick={handleSave}
                 >
-                    Añadir
+                    {isSubmitting ? <CircularProgress size={16} color="inherit" /> : "Añadir"}
                 </button>
             </DialogActions>
         </Dialog>

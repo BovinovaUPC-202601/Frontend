@@ -3,33 +3,45 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useGlobalStore } from '../../shared/stores/global-store';
-import { useStaffStore } from '../stores/staff-store';
+import type { Category } from '../model/Category';
 
-export function AddStaffDialog() {
-    const { isOpenModal, toggleModal, newStaff, setNewStaff, resetNewStaff } = useStaffStore();
-    const { addStaff } = useGlobalStore();
-    const [validationError, setValidationError] = useState<string>("");
+interface EditCategoryDialogProps {
+    category: Category;
+    open: boolean;
+    onClose: () => void;
+}
+
+export function EditCategoryDialog({ category, open, onClose }: EditCategoryDialogProps) {
+    const { updateCategory } = useGlobalStore();
+    const [name, setName] = useState(category.name ?? '');
+    const [validationError, setValidationError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const canSubmit = Boolean(newStaff.name?.trim());
+
+    useEffect(() => {
+        if (open) {
+            setName(category.name ?? '');
+            setValidationError('');
+            setIsSubmitting(false);
+        }
+    }, [category, open]);
 
     const handleClose = () => {
-        resetNewStaff();
-        setValidationError("");
-        toggleModal();
+        setValidationError('');
+        onClose();
     };
 
     const handleSave = async () => {
-        if (!newStaff.name?.trim()) {
-            setValidationError("Completa todos los campos");
+        if (!name.trim()) {
+            setValidationError('Completa todos los campos');
             return;
         }
 
-        setValidationError("");
+        setValidationError('');
         setIsSubmitting(true);
         try {
-            await addStaff(newStaff);
+            await updateCategory({ ...category, name });
             handleClose();
         } finally {
             setIsSubmitting(false);
@@ -37,19 +49,19 @@ export function AddStaffDialog() {
     };
 
     return (
-        <Dialog open={isOpenModal} onClose={handleClose}  >
-            <DialogTitle className='font-mulish'>Registrar personal</DialogTitle>
+        <Dialog open={open} onClose={handleClose}>
+            <DialogTitle className='font-mulish'>Editar categoría</DialogTitle>
             <DialogContent className='font-mulish flex flex-col gap-5'>
                 <div className="flex flex-col gap-2">
-                    <label htmlFor="name">Nombre</label>
+                    <label htmlFor="edit-category-name">Nombre</label>
                     <input
-                        id="name"
+                        id="edit-category-name"
                         type="text"
                         autoComplete='off'
-                        placeholder="Javier Lopez"
+                        placeholder="Vacunas"
                         className="focus:outline-none border-1 border-neutral-300 px-3 py-2 rounded-sm"
-                        value={newStaff.name || ""}
-                        onChange={(e) => setNewStaff({ name: e.target.value })}
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                     />
                 </div>
                 {validationError && (
@@ -64,13 +76,13 @@ export function AddStaffDialog() {
                     Cancelar
                 </button>
                 <button
-                    disabled={!canSubmit || isSubmitting}
+                    disabled={isSubmitting}
                     className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500"
                     onClick={handleSave}
                 >
-                    {isSubmitting ? <CircularProgress size={16} color="inherit" /> : "Añadir"}
+                    {isSubmitting ? <CircularProgress size={16} color="inherit" /> : 'Guardar'}
                 </button>
             </DialogActions>
         </Dialog>
-    )
+    );
 }
