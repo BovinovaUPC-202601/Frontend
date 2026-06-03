@@ -11,8 +11,8 @@ interface MonitoringState {
     records: HealthRecord[];
     loading: boolean;
 
-    fetchLatest: (bovineId: number) => Promise<void>;
-    fetchHistory: (bovineId: number) => Promise<void>;
+    fetchLatest: (bovineId: number, silent?: boolean) => Promise<void>;
+    fetchHistory: (bovineId: number, silent?: boolean) => Promise<void>;
 }
 
 export const useMonitoringStore = create(immer<MonitoringState>((set) => ({
@@ -23,27 +23,27 @@ export const useMonitoringStore = create(immer<MonitoringState>((set) => ({
     records: [],
     loading: false,
 
-    fetchLatest: async (bovineId) => {
-        set(state => { state.loading = true; });
+    fetchLatest: async (bovineId, silent = false) => {
+        if (!silent) set(state => { state.loading = true; });
         try {
             const res = await monitoringService.getLatestByBovineId(bovineId);
             if (res.data) set(state => { state.latestRecord = new HealthRecord(res.data); });
         } catch {
             set(state => { state.latestRecord = null; });
         } finally {
-            set(state => { state.loading = false; });
+            if (!silent) set(state => { state.loading = false; });
         }
     },
 
-    fetchHistory: async (bovineId) => {
-        set(state => { state.loading = true; });
+    fetchHistory: async (bovineId, silent = false) => {
+        if (!silent) set(state => { state.loading = true; });
         try {
             const res = await monitoringService.getRecordsByBovineId(bovineId);
             if (res.data) set(state => { state.records = res.data.map(r => new HealthRecord(r)); });
         } catch {
             set(state => { state.records = []; });
         } finally {
-            set(state => { state.loading = false; });
+            if (!silent) set(state => { state.loading = false; });
         }
     },
 })));

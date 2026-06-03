@@ -3,7 +3,10 @@ import ThermostatIcon from "@mui/icons-material/Thermostat";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import type { HealthRecord } from "../model/health-record";
+
+dayjs.extend(utc);
 
 interface Props {
     records: HealthRecord[];
@@ -39,7 +42,7 @@ export function HistoryList({ records }: Props) {
                             </span>
                         </div>
                         <span className="text-neutral-400 text-xs">
-                            {dayjs(record.recordedAt).format('DD/MM/YYYY HH:mm')}
+                            {dayjs.utc(record.recordedAt).local().format('DD/MM/YYYY HH:mm')}
                         </span>
                     </div>
                 ))}

@@ -21,6 +21,16 @@ export function MonitoringPage() {
         fetchAnimals();
     }, []);
 
+    // Auto-refresh (polling): re-fetch every 5s while a bovine is selected
+    useEffect(() => {
+        if (!selectedBovineId) return;
+        const interval = setInterval(() => {
+            fetchLatest(selectedBovineId, true);
+            fetchHistory(selectedBovineId, true);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [selectedBovineId]);
+
     const handleSelect = async (e: React.ChangeEvent<HTMLSelectElement>) => {
         const id = Number(e.target.value);
         setSelectedBovineId(id);
