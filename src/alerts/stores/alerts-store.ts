@@ -7,13 +7,23 @@ interface AlertsState {
     alerts: Alert[];
     loading: boolean;
 
+    // Toast notifications (corner pop-ups for newly arrived alerts).
+    seenIds: number[];      // alert ids already known — never re-toasted
+    toasts: Alert[];        // queue currently shown in the corner
+    initialized: boolean;   // baseline taken? avoids toasting pre-existing alerts
+
     fetchAlerts: (userId: number) => Promise<void>;
+    pollAlerts: (userId: number) => Promise<void>;
     markAsRead: (alertId: number) => Promise<void>;
+    dismissToast: (alertId: number) => void;
 }
 
-export const useAlertsStore = create(immer<AlertsState>((set) => ({
+export const useAlertsStore = create(immer<AlertsState>((set, get) => ({
     alerts: [],
     loading: false,
+    seenIds: [],
+    toasts: [],
+    initialized: false,
 
     fetchAlerts: async (userId) => {
         set(state => { state.loading = true; });
@@ -24,6 +34,38 @@ export const useAlertsStore = create(immer<AlertsState>((set) => ({
             set(state => { state.alerts = []; });
         } finally {
             set(state => { state.loading = false; });
+        }
+    },
+
+    // Polled silently in the background. Detects alerts that appeared since the
+    // baseline and pushes them as corner toasts. The first call only takes the
+    // baseline — it never toasts alerts that already existed when you logged in.
+    pollAlerts: async (userId) => {
+        try {
+            const res = await alertsService.getAlertsByUserId(userId);
+            if (!res.data) return;
+            const fresh = res.data.map(a => new Alert(a));
+
+            set(state => {
+                state.alerts = fresh;
+
+                if (!state.initialized) {
+                    // Baseline: remember everything, toast nothing.
+                    state.seenIds = fresh.map(a => a.id);
+                    state.initialized = true;
+                    return;
+                }
+
+                const incoming = fresh.filter(
+                    a => a.isUnread && !state.seenIds.includes(a.id)
+                );
+                for (const a of incoming) {
+                    state.toasts.push(a);
+                    state.seenIds.push(a.id);
+                }
+            });
+        } catch (error) {
+            console.error(error);
         }
     },
 
@@ -39,5 +81,11 @@ export const useAlertsStore = create(immer<AlertsState>((set) => ({
         } catch (error) {
             console.error(error);
         }
+    },
+
+    dismissToast: (alertId) => {
+        set(state => {
+            state.toasts = state.toasts.filter(t => t.id !== alertId);
+        });
     },
 })));

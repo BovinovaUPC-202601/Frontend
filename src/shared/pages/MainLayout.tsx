@@ -13,6 +13,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Button from '@mui/material/Button';
 import { useAuthStore } from "../../auth/store/auth-store";
+import { AlertToaster } from "../../alerts/components/AlertToaster";
 
 export function MainLayout() {
     const navigate = useNavigate();
@@ -91,6 +92,7 @@ export function MainLayout() {
                 </div>
             </AppBar >
             <Outlet />
+            <AlertToaster />
         </div>
     )
 }
