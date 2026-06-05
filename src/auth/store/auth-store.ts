@@ -11,8 +11,12 @@ interface AuthState {
     setUser: (user: Partial<User>) => void;
     setError: (error: string | null) => void;
     logout: () => void;
+
     login: () => Promise<boolean>;
     register: (confirmPassword: string) => Promise<boolean>;
+
+
+    setSubscription: (plan: string) => void;
 }
 
 export const useAuthStore = create(immer<AuthState>((set, get) => ({
@@ -64,5 +68,9 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
         } finally {
             set(state => { state.isLoading = false; });
         }
-    }
+    },
+    setSubscription: (plan: string) =>
+        set(state => {
+            state.user.subscriptionPlan = plan;
+        }),
 })));

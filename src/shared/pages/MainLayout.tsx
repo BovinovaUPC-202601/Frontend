@@ -79,6 +79,11 @@ export function MainLayout() {
                         <span>Asistente IA</span>
                     </NavLink>
 
+                    <NavLink to="/subscription-management" className={linkClass}>
+                        <AutoAwesomeIcon className="w-5 h-auto" />
+                        <span>Suscripción</span>
+                    </NavLink>
+
                     <Button
                         variant="outlined"
                         color="inherit"

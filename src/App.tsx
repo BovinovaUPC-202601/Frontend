@@ -10,6 +10,7 @@ import { MonitoringPage } from "./monitoring/pages/MonitoringPage"
 import { PrivateRoute } from "./shared/pages/PrivateRoute"
 import { StablesPage } from "./stables/pages/StablesPage"
 import { StaffPage } from "./staff/pages/StaffPage"
+import { SubscriptionManagementPage} from "./subscription/pages/SubscriptionManagementPage"
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/monitoring" element={<MonitoringPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
         <Route path="/ai-assistant" element={<AIAssistantPage />} />
+          <Route path="/subscription-management" element={<SubscriptionManagementPage />} />
       </Route>
     </Routes>
   )
