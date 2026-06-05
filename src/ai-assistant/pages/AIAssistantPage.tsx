@@ -6,15 +6,43 @@ import PetsIcon from "@mui/icons-material/Pets";
 import SendIcon from "@mui/icons-material/Send";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
+import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import CircularProgress from "@mui/material/CircularProgress";
 import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useGlobalStore } from "../../shared/stores/global-store";
 import type { Animal } from "../../animals/model/animal";
-import type { AnalysisResult, ChatMessage } from "../model/ai-assistant";
+import type { AnalysisResult, BovineAnalysis, ChatMessage, ChatMessageDto } from "../model/ai-assistant";
 import { aiAssistantService } from "../services/ai-assistant-service";
 
 type ChatMode = "general" | "bovine";
+
+/** The AI endpoints are gated behind the Plus plan; the backend answers with HTTP 403. */
+const isPlusRequired = (error: unknown) =>
+    typeof error === "object" && error !== null &&
+    (error as { response?: { status?: number } }).response?.status === 403;
+
+const timeFromIso = (iso: string) => {
+    const date = new Date(iso);
+    return Number.isNaN(date.getTime())
+        ? nowLabel()
+        : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
+
+const historyToMessage = (dto: ChatMessageDto): ChatMessage => ({
+    id: `${dto.role}-${dto.timestamp}-${Math.random().toString(16).slice(2)}`,
+    role: dto.role.toLowerCase() === "user" ? "user" : "assistant",
+    content: dto.content,
+    time: timeFromIso(dto.timestamp),
+});
+
+const analysisFromDto = (dto: BovineAnalysis): AnalysisResult => ({
+    score: dto.score,
+    visibleIssues: dto.visibleIssues,
+    urgency: dto.urgency,
+    recommendation: dto.recommendation,
+    confidence: dto.confidence,
+});
 
 const nowLabel = () =>
     new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -40,6 +68,7 @@ export function AIAssistantPage() {
     const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
     const [chatMode, setChatMode] = useState<ChatMode>("general");
+    const [requiresPlus, setRequiresPlus] = useState(false);
     const [selectedBovineId, setSelectedBovineId] = useState(0);
     const [generalInput, setGeneralInput] = useState("");
     const [bovineInput, setBovineInput] = useState("");
@@ -74,6 +103,70 @@ export function AIAssistantPage() {
             setAnalysisBovineId((current) => current || animals[0].id);
         }
     }, [animals]);
+
+    // Restore the persisted general conversation (gated ai endpoint -> 403 means Plus is required).
+    useEffect(() => {
+        let active = true;
+        (async () => {
+            try {
+                const res = await aiAssistantService.getGeneralChatHistory();
+                if (active && res.data?.messages?.length) {
+                    setGeneralMessages(res.data.messages.map(historyToMessage));
+                }
+            } catch (error) {
+                if (isPlusRequired(error)) setRequiresPlus(true);
+                else console.error(error);
+            }
+        })();
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    // Reload the conversation of the selected bovine (fixes history bleeding across bovines).
+    useEffect(() => {
+        if (!selectedBovineId || requiresPlus) return;
+        let active = true;
+        (async () => {
+            const bovineName = animals.find((animal) => animal.id === selectedBovineId)?.name ?? "este bovino";
+            try {
+                const res = await aiAssistantService.getBovineChatHistory(selectedBovineId);
+                if (!active) return;
+                const messages = res.data?.messages ?? [];
+                setBovineMessages(
+                    messages.length > 0
+                        ? messages.map(historyToMessage)
+                        : [createMessage("assistant", `Pregúntame lo que quieras sobre ${bovineName}: su historial, cuidados o contexto actual.`)]
+                );
+            } catch (error) {
+                if (isPlusRequired(error)) setRequiresPlus(true);
+                else console.error(error);
+            }
+        })();
+        return () => {
+            active = false;
+        };
+    }, [selectedBovineId, requiresPlus, animals]);
+
+    // Show the persisted analyses of the bovine selected in the visual-analysis panel.
+    useEffect(() => {
+        if (!analysisBovineId || requiresPlus) return;
+        let active = true;
+        (async () => {
+            try {
+                const res = await aiAssistantService.getBovineAnalyses(analysisBovineId);
+                if (!active) return;
+                const analyses = res.data ?? [];
+                setAnalysisResult(analyses.length > 0 ? analysisFromDto(analyses[0]) : null);
+            } catch (error) {
+                if (isPlusRequired(error)) setRequiresPlus(true);
+                else console.error(error);
+            }
+        })();
+        return () => {
+            active = false;
+        };
+    }, [analysisBovineId, requiresPlus]);
 
     useLayoutEffect(() => {
         const container = messagesContainerRef.current;
@@ -115,7 +208,7 @@ export function AIAssistantPage() {
     const handleChatSubmit = async (event?: FormEvent) => {
         event?.preventDefault();
         const message = activeInput.trim();
-        if (!message || isChatLoading) return;
+        if (!message || isChatLoading || requiresPlus) return;
 
         if (chatMode === "bovine" && !selectedBovineId) {
             setChatError("Selecciona un bovino para continuar.");
@@ -136,8 +229,13 @@ export function AIAssistantPage() {
             addChatMessage(createMessage("assistant", response.data.response));
         } catch (error) {
             console.error(error);
-            setChatError("No se pudo obtener respuesta del asistente.");
-            addChatMessage(createMessage("assistant", "No pude completar la consulta. Intenta nuevamente."));
+            if (isPlusRequired(error)) {
+                setRequiresPlus(true);
+                setChatError("El Asistente IA está disponible en el plan Plus.");
+            } else {
+                setChatError("No se pudo obtener respuesta del asistente.");
+                addChatMessage(createMessage("assistant", "No pude completar la consulta. Intenta nuevamente."));
+            }
         } finally {
             setIsChatLoading(false);
         }
@@ -178,6 +276,8 @@ export function AIAssistantPage() {
     };
 
     const handleAnalyzePhoto = async () => {
+        if (requiresPlus) return;
+
         if (!analysisBovineId) {
             setAnalysisError("Selecciona un bovino para analizar.");
             return;
@@ -196,7 +296,12 @@ export function AIAssistantPage() {
             setAnalysisResult(response.data);
         } catch (error) {
             console.error(error);
-            setAnalysisError("No se pudo completar el analisis visual.");
+            if (isPlusRequired(error)) {
+                setRequiresPlus(true);
+                setAnalysisError("El análisis visual está disponible en el plan Plus.");
+            } else {
+                setAnalysisError("No se pudo completar el analisis visual.");
+            }
         } finally {
             setIsAnalyzing(false);
         }
@@ -237,6 +342,18 @@ export function AIAssistantPage() {
                     Contexto del hato, consultas por bovino y analisis visual.
                 </p>
             </div>
+
+            {requiresPlus && (
+                <div className="flex items-center gap-3 rounded-md border border-state-warning/40 bg-state-warning/10 px-4 py-3">
+                    <WorkspacePremiumIcon className="text-state-warning" />
+                    <div>
+                        <div className="text-sm font-bold text-neutral-800">Plan Plus requerido</div>
+                        <div className="text-xs font-semibold text-neutral-600">
+                            El Asistente IA (chat y analisis visual) esta disponible en el plan Plus. Activalo para desbloquearlo.
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
                 <section className="flex min-h-[620px] flex-col overflow-hidden rounded-md border border-neutral-300 bg-white">
@@ -368,18 +485,20 @@ export function AIAssistantPage() {
                                 value={activeInput}
                                 onChange={(event) => setActiveInput(event.target.value)}
                                 placeholder={
-                                    chatMode === "general"
-                                        ? "Consulta sobre el hato..."
-                                        : selectedBovine
-                                          ? `Pregunta sobre ${selectedBovine.name}...`
-                                          : "Selecciona un bovino..."
+                                    requiresPlus
+                                        ? "Actualiza a Plus para usar el asistente"
+                                        : chatMode === "general"
+                                          ? "Consulta sobre el hato..."
+                                          : selectedBovine
+                                            ? `Pregunta sobre ${selectedBovine.name}...`
+                                            : "Selecciona un bovino..."
                                 }
-                                disabled={isChatLoading}
+                                disabled={isChatLoading || requiresPlus}
                             />
                             <button
                                 type="submit"
                                 className="flex h-12 w-12 items-center justify-center rounded-md bg-brand-default text-white hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
-                                disabled={isChatLoading || !activeInput.trim()}
+                                disabled={isChatLoading || !activeInput.trim() || requiresPlus}
                                 title="Enviar"
                             >
                                 <SendIcon />
@@ -457,7 +576,7 @@ export function AIAssistantPage() {
                             type="button"
                             className="mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-brand-default px-4 py-3 text-sm font-bold text-white hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
                             onClick={handleAnalyzePhoto}
-                            disabled={isAnalyzing || !analysisBovineId || !imageBase64}
+                            disabled={isAnalyzing || !analysisBovineId || !imageBase64 || requiresPlus}
                         >
                             {isAnalyzing ? <CircularProgress size={18} color="inherit" /> : <ImageSearchIcon />}
                             Analizar con IA
