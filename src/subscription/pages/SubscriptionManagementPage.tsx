@@ -1,4 +1,4 @@
-import { useAuthStore } from "../../auth/stores/auth-store";
+import { useAuthStore } from "../../auth/store/auth-store";
 import { useSubscriptionStore } from "../stores/subscription-store";
 
 export function SubscriptionManagementPage() {
