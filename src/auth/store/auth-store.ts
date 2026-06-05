@@ -11,6 +11,8 @@ interface AuthState {
     logout: () => void;
     login: (onSuccess: () => void) => Promise<void>;
     register: (confirmPassword: string, onSuccess: () => void) => Promise<void>;
+
+    setSubscription: (plan: string) => void;
 }
 
 export const useAuthStore = create(immer<AuthState>((set, get) => ({
@@ -50,5 +52,9 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
             console.error("Registration failed:", error);
             set(state => { state.error = `Error al registrar el usuario: ${error.message}`; });
         }
-    }
+    },
+    setSubscription: (plan: string) =>
+        set(state => {
+            state.user.subscriptionPlan = plan;
+        }),
 })));

@@ -3,6 +3,7 @@ export class User {
     username?: string;
     email?: string;
     password?: string;
+    subscriptionPlan?: string;
 
     constructor(data: Partial<User> = {}) {
         Object.assign(this, data);
