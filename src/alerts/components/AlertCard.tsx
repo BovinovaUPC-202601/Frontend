@@ -49,7 +49,7 @@ export function AlertCard({ alert, onMarkAsRead }: Props) {
                         </div>
 
                         <div className="flex gap-2 flex-wrap">
-                            <Chip label={alert.alertType}    size="small" variant="outlined" />
+                            <Chip label={alert.alertTypeLabel} size="small" variant="outlined" />
                             <Chip label={alert.urgencyLevel} size="small" variant="outlined"
                                 color={alert.isRed ? 'error' : alert.isYellow ? 'warning' : 'success'} />
                             <Chip label={alert.isUnread ? 'No leída' : 'Leída'} size="small"

@@ -55,7 +55,7 @@ function ToastItem({ alert, onView }: { alert: Alert; onView: () => void }) {
                 }
             >
                 <AlertTitle className="!font-semibold">
-                    Alerta de {alert.alertType}
+                    Alerta de {alert.alertTypeLabel}
                 </AlertTitle>
                 {alert.message}
             </MuiAlert>
