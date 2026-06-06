@@ -43,7 +43,14 @@ export const useSubscriptionStore = create(
         fetchCurrentPlan: async () => {
             try {
                 const res = await subscriptionService.getCurrent();
-                useAuthStore.getState().setSubscription(res.data.plan ?? "Free");
+                // Effective access = Plus AND active. A cancelled/suspended/expired
+                // subscription keeps plan="Plus" but must NOT unlock Plus features
+                // (the backend [RequiresPlus] only honors an active Plus).
+                const effective =
+                    res.data.plan === "Plus" && res.data.status === "Active"
+                        ? "Plus"
+                        : "Free";
+                useAuthStore.getState().setSubscription(effective);
             } catch {
                 // On failure assume the most restrictive plan so gated routes stay locked.
                 useAuthStore.getState().setSubscription("Free");

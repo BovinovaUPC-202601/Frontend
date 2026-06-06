@@ -6,6 +6,8 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import { useState } from "react";
 import { useGlobalStore } from "../../shared/stores/global-store";
+import { useAuthStore } from "../../auth/store/auth-store";
+import { CollarSection } from "../../collars/components/CollarSection";
 import { Animal } from "../model/animal";
 import dayjs from "dayjs";
 import Avatar from "@mui/material/Avatar";
@@ -16,6 +18,7 @@ interface AnimalCardProps {
 
 export function AnimalCard({ animal }: AnimalCardProps) {
   const { deleteAnimal, updateAnimal, stables } = useGlobalStore();
+  const isPlus = useAuthStore((s) => s.user.subscriptionPlan === "Plus");
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(animal.name);
@@ -137,6 +140,8 @@ export function AnimalCard({ animal }: AnimalCardProps) {
                     placeholder="HR Max"
                   />
                 </div>
+
+                {isPlus && <CollarSection bovineId={animal.id} />}
               </>
             ) : (
               <>
