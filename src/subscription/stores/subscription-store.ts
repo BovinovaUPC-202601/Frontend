@@ -7,6 +7,7 @@ interface SubscriptionState {
     loading: boolean;
     error: string | null;
     updatePlan: (plan: string) => Promise<void>;
+    fetchCurrentPlan: () => Promise<void>;
 }
 
 export const useSubscriptionStore = create(
@@ -18,7 +19,11 @@ export const useSubscriptionStore = create(
             set(state => { state.loading = true; });
 
             try {
-                await subscriptionService.updateSubscription(plan);
+                if (plan === "Plus") {
+                    await subscriptionService.activatePlus();
+                } else {
+                    await subscriptionService.cancel();
+                }
 
                 useAuthStore.getState().setSubscription(plan);
 
@@ -32,6 +37,16 @@ export const useSubscriptionStore = create(
                     state.loading = false;
                     state.error = err.message;
                 });
+            }
+        },
+
+        fetchCurrentPlan: async () => {
+            try {
+                const res = await subscriptionService.getCurrent();
+                useAuthStore.getState().setSubscription(res.data.plan ?? "Free");
+            } catch {
+                // On failure assume the most restrictive plan so gated routes stay locked.
+                useAuthStore.getState().setSubscription("Free");
             }
         }
     }))

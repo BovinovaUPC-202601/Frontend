@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Outlet, NavLink } from "react-router";
 import { useNavigate } from "react-router";
 import AppBar from '@mui/material/AppBar';
@@ -13,11 +14,20 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Button from '@mui/material/Button';
 import { useAuthStore } from "../../auth/store/auth-store";
+import { useSubscriptionStore } from "../../subscription/stores/subscription-store";
 import { AlertToaster } from "../../alerts/components/AlertToaster";
 
 export function MainLayout() {
     const navigate = useNavigate();
     const logout = useAuthStore(state => state.logout);
+    const isPlus = useAuthStore(state => state.user.subscriptionPlan === "Plus");
+    const fetchCurrentPlan = useSubscriptionStore(state => state.fetchCurrentPlan);
+
+    // Load the real plan from the backend on mount so gating survives refresh
+    // (the auth store resets on reload while the token persists in localStorage).
+    useEffect(() => {
+        fetchCurrentPlan();
+    }, [fetchCurrentPlan]);
 
     const linkClass = ({ isActive }: { isActive: boolean }) =>
         `cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 
@@ -64,20 +74,24 @@ export function MainLayout() {
                         <span>Inventario</span>
                     </NavLink>
 
-                    <NavLink to="/monitoring" className={linkClass}>
-                        <MonitorHeartIcon className="w-5 h-auto" />
-                        <span>Monitoreo IoT</span>
-                    </NavLink>
+                    {isPlus && (
+                        <NavLink to="/monitoring" className={linkClass}>
+                            <MonitorHeartIcon className="w-5 h-auto" />
+                            <span>Monitoreo IoT</span>
+                        </NavLink>
+                    )}
 
                     <NavLink to="/alerts" className={linkClass}>
                         <NotificationsIcon className="w-5 h-auto" />
                         <span>Alertas</span>
                     </NavLink>
 
-                    <NavLink to="/ai-assistant" className={linkClass}>
-                        <AutoAwesomeIcon className="w-5 h-auto" />
-                        <span>Asistente IA</span>
-                    </NavLink>
+                    {isPlus && (
+                        <NavLink to="/ai-assistant" className={linkClass}>
+                            <AutoAwesomeIcon className="w-5 h-auto" />
+                            <span>Asistente IA</span>
+                        </NavLink>
+                    )}
 
                     <NavLink to="/subscription-management" className={linkClass}>
                         <AutoAwesomeIcon className="w-5 h-auto" />
