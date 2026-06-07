@@ -4,8 +4,8 @@ import { useGlobalStore } from "../../shared/stores/global-store";
 import { useAnimalStore } from "../stores/animals-store";
 
 export function AnimalList() {
-    const { searchQuery, filteredAnimals, isFiltered, filterAnimals } = useAnimalStore();
-    const { animals, fetchAnimals, fetchStables } = useGlobalStore();
+    const { searchQuery, filteredAnimals, isFiltered, filterAnimals, stableFilter } = useAnimalStore();
+    const { animals, stables, fetchAnimals, fetchStables } = useGlobalStore();
 
     useEffect(() => {
         fetchAnimals();
@@ -26,7 +26,12 @@ export function AnimalList() {
     }
     else if (isFiltered) {
         if (filteredAnimals.length == 0) {
-            showMessage = `No se encontraron animales para "${searchQuery}"`;
+            if (stableFilter != null) {
+                const stableName = stables.find(s => s.id === stableFilter)?.name ?? "";
+                showMessage = `No hay animales en "${stableName}"`;
+            } else {
+                showMessage = `No se encontraron animales para "${searchQuery}"`;
+            }
         } else {
             listToShow = filteredAnimals;
         }
