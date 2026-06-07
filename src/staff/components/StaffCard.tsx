@@ -1,8 +1,8 @@
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import CircleIcon from '@mui/icons-material/Circle';
+import {Trash2 as DeleteIcon} from "lucide-react";
+import {Pencil as EditIcon} from "lucide-react";
+import {Check as CheckIcon} from "lucide-react"
+import {X as CloseIcon} from "lucide-react";
+import {Circle as CircleIcon} from "lucide-react"
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useGlobalStore } from "../../shared/stores/global-store";

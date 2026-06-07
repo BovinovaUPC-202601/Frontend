@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
-import NotificationsIcon from "@mui/icons-material/Notifications";
+import {Bell as NotificationsIcon} from "lucide-react";
 import { useAlertsStore } from "../stores/alerts-store";
 import { AlertCard } from "../components/AlertCard";
 import { useGlobalStore } from "../../shared/stores/global-store";

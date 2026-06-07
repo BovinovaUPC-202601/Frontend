@@ -3,7 +3,7 @@ import { AddStaffDialog } from "../components/AddStaffDialog";
 import { SearchBar } from "../components/SearchBar";
 import { StaffList } from "../components/StaffList";
 import { useStaffStore } from "../stores/staff-store";
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import {Users as PeopleAltIcon} from "lucide-react";
 
 export function StaffPage() {
     const { setSearchQuery } = useStaffStore();

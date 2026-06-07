@@ -3,7 +3,7 @@ import { AddStableDialog } from "../components/AddStableDialog";
 import { SearchBar } from "../components/SearchBar";
 import { StableList } from "../components/StableList";
 import { useStableStore } from "../stores/stable-store";
-import CabinIcon from '@mui/icons-material/Cabin';
+import {House as CabinIcon} from "lucide-react";
 
 export function StablesPage() {
     const { setSearchQuery } = useStableStore();

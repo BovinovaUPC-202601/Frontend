@@ -1,8 +1,8 @@
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import CampaignIcon from '@mui/icons-material/Campaign';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import CircleIcon from '@mui/icons-material/Circle';
+import {Trash2 as DeleteIcon} from "lucide-react";
+import {Pencil as EditIcon} from "lucide-react";
+import {Megaphone as CampaignIcon} from "lucide-react";
+import {Calendar as CalendarTodayIcon} from "lucide-react";
+import {Circle as CircleIcon} from "lucide-react"
 import { useState } from 'react';
 import { createPortal } from "react-dom";
 import { useGlobalStore } from "../../shared/stores/global-store";

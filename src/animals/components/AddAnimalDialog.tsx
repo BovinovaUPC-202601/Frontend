@@ -4,8 +4,8 @@ import { useGlobalStore } from "../../shared/stores/global-store";
 import { useAnimalStore } from "../stores/animals-store";
 import dayjs from "dayjs";
 import { useRef, useState } from "react";
-import CloseIcon from '@mui/icons-material/Close';
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
+import {X as CloseIcon} from "lucide-react";
+import {ImagePlus as AddPhotoAlternateIcon} from "lucide-react";
 
 const MIN_TEMP = 30;
 const MAX_TEMP = 45;

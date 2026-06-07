@@ -1,4 +1,4 @@
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Eye, EyeOff } from "lucide-react";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useState } from "react";
 import { useNavigate } from "react-router";
@@ -63,7 +63,7 @@ export function RegisterForm() {
                         onClick={() => setShowPassword(!showPassword)}
                         tabIndex={-1}
                     >
-                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                 </div>
             </div>
@@ -85,7 +85,7 @@ export function RegisterForm() {
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         tabIndex={-1}
                     >
-                        {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                        {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                 </div>
             </div>

@@ -6,9 +6,9 @@ dayjs.extend(timezone);
 
 import { useCampaignsStore } from '../stores/campaigns-store';
 import { useGlobalStore } from '../../shared/stores/global-store';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import {ChevronLeft as ChevronLeftIcon} from "lucide-react"
+import {ChevronRight as ChevronRightIcon} from "lucide-react"
+import {Calendar as CalendarMonthIcon} from "lucide-react";
 
 const TZ = 'America/Lima';
 

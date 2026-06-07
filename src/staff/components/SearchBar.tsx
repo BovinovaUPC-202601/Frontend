@@ -1,4 +1,4 @@
-import AddIcon from '@mui/icons-material/Add';
+import {Plus as AddIcon} from "lucide-react";
 import { useGlobalStore } from '../../shared/stores/global-store';
 import { StaffStatus } from '../model/staff';
 import { useStaffStore } from '../stores/staff-store';

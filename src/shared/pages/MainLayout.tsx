@@ -2,19 +2,19 @@ import { useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router";
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import PetsIcon from '@mui/icons-material/Pets';
-import CabinIcon from '@mui/icons-material/Cabin';
-import CampaignIcon from '@mui/icons-material/Campaign';
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-import InventoryIcon from '@mui/icons-material/Inventory';
-import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import LogoutIcon from '@mui/icons-material/Logout';
+import {Menu as MenuIcon} from "lucide-react"
+import {ChevronLeft as ChevronLeftIcon} from "lucide-react"
+import {ChevronRight as ChevronRightIcon} from "lucide-react"
+import {LayoutDashboard as DashboardIcon} from "lucide-react";
+import {PawPrint as PetsIcon} from "lucide-react";
+import {House as CabinIcon} from "lucide-react";
+import {Megaphone as CampaignIcon} from "lucide-react";
+import {Users as PeopleAltIcon} from "lucide-react";
+import {Package as InventoryIcon} from "lucide-react";
+import {HeartPulse as MonitorHeartIcon} from "lucide-react";
+import {Bell as NotificationsIcon} from "lucide-react";
+import {Sparkles as AutoAwesomeIcon} from "lucide-react";
+import {LogOut as LogoutIcon} from "lucide-react";
 import { useAuthStore } from "../../auth/store/auth-store";
 import { useGlobalStore } from "../stores/global-store";
 import { AlertToaster } from "../../alerts/components/AlertToaster";

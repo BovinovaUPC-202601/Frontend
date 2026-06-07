@@ -2,8 +2,8 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { useState } from "react";
 import { useGlobalStore } from "../../shared/stores/global-store";
 import { useStableStore } from "../stores/stable-store";
-import CloseIcon from '@mui/icons-material/Close';
-import CabinIcon from '@mui/icons-material/Cabin';
+import {X as CloseIcon} from "lucide-react";
+import {House as CabinIcon} from "lucide-react";
 
 export function AddStableDialog() {
   const { isOpenModal, toggleModal, newStable, setNewStable, resetNewStable } =

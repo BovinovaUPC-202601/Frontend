@@ -4,8 +4,8 @@ import { AnimalList } from "../components/AnimalList";
 import { SearchBar } from "../components/SearchBar";
 import { useAnimalStore } from "../stores/animals-store";
 import { useGlobalStore } from "../../shared/stores/global-store";
-import PetsIcon from '@mui/icons-material/Pets';
-import CloseIcon from '@mui/icons-material/Close';
+import {PawPrint as PetsIcon} from "lucide-react";
+import {X as CloseIcon} from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router";
 
 export function AnimalsPage() {

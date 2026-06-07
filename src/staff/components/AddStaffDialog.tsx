@@ -2,8 +2,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useState } from 'react';
 import { useGlobalStore } from '../../shared/stores/global-store';
 import { useStaffStore } from '../stores/staff-store';
-import CloseIcon from '@mui/icons-material/Close';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import {X as CloseIcon} from "lucide-react";
+import {UserPlus as PersonAddIcon} from "lucide-react";
 
 export function AddStaffDialog() {
     const { isOpenModal, toggleModal, newStaff, setNewStaff, resetNewStaff } = useStaffStore();

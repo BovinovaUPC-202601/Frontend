@@ -3,8 +3,8 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 import { useGlobalStore } from '../../shared/stores/global-store';
 import type { Campaign } from '../model/campaign';
-import CloseIcon from '@mui/icons-material/Close';
-import CampaignIcon from '@mui/icons-material/Campaign';
+import {X as CloseIcon} from "lucide-react";
+import {Megaphone as CampaignIcon} from "lucide-react";
 import CircularProgress from "@mui/material/CircularProgress";
 
 interface EditCampaignDialogProps {

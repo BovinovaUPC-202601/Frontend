@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useGlobalStore } from "../../shared/stores/global-store";
 import { useStaffStore } from "../stores/staff-store";
 import { StaffCard } from "./StaffCard";
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import {Users as PeopleAltIcon} from "lucide-react";
 
 export function StaffList() {
     const { searchQuery, filteredStaff, isFiltered, statusFilter, filterStaff } = useStaffStore();

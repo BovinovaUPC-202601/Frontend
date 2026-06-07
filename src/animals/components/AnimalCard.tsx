@@ -1,12 +1,12 @@
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import CakeIcon from "@mui/icons-material/Cake";
-import PetsIcon from "@mui/icons-material/Pets";
-import HomeIcon from "@mui/icons-material/Home";
-import DeviceThermostatIcon from "@mui/icons-material/DeviceThermostat";
-import FavoriteIcon from "@mui/icons-material/Favorite";
+import {Check as CheckIcon} from "lucide-react"
+import {X as CloseIcon} from "lucide-react";
+import {Trash2 as DeleteIcon} from "lucide-react";
+import {Pencil as EditIcon} from "lucide-react";
+import {Cake as CakeIcon} from "lucide-react"
+import {PawPrint as PetsIcon} from "lucide-react";
+import {House as HomeIcon} from "lucide-react";
+import {Thermometer as DeviceThermostatIcon} from "lucide-react";
+import {Heart as FavoriteIcon} from "lucide-react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useGlobalStore } from "../../shared/stores/global-store";

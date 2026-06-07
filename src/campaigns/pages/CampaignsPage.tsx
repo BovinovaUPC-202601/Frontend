@@ -4,9 +4,9 @@ import { CampaignList } from "../components/CampaignList";
 import { CampaignCalendar } from "../components/CampaignCalendar";
 import { SearchBar } from "../components/SearchBar";
 import { useCampaignsStore } from "../stores/campaigns-store";
-import CampaignIcon from '@mui/icons-material/Campaign';
-import ViewListIcon from '@mui/icons-material/ViewList';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import {Megaphone as CampaignIcon} from "lucide-react";
+import {List as ViewListIcon} from "lucide-react";
+import {Calendar as CalendarMonthIcon} from "lucide-react";
 
 export function CampaignsPage() {
     const { setSearchQuery, viewMode, setViewMode } = useCampaignsStore();

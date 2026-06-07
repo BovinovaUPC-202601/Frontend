@@ -4,8 +4,8 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 import { useGlobalStore } from '../../shared/stores/global-store';
 import { useCampaignsStore } from '../stores/campaigns-store';
-import CloseIcon from '@mui/icons-material/Close';
-import CampaignIcon from '@mui/icons-material/Campaign';
+import {X as CloseIcon} from "lucide-react";
+import {Megaphone as CampaignIcon} from "lucide-react";
 
 export function AddCampaignDialog() {
     const { isOpenModal, toggleModal, newCampaign, setNewCampaign, resetNewCampaign } = useCampaignsStore();

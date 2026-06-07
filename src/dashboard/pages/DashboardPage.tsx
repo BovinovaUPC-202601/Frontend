@@ -2,13 +2,13 @@ import { useEffect, useMemo } from "react";
 import { useGlobalStore } from "../../shared/stores/global-store";
 import { DashboardCards } from "../components/DashboardCards";
 import { NextCampaigns } from "../components/NextCampaigns";
-import MaleIcon from "@mui/icons-material/Male";
-import FemaleIcon from "@mui/icons-material/Female";
-import CabinIcon from "@mui/icons-material/Cabin";
-import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
-import InventoryIcon from "@mui/icons-material/Inventory";
-import CampaignIcon from "@mui/icons-material/Campaign";
-import LabelIcon from "@mui/icons-material/Label";
+import {Mars as MaleIcon} from "lucide-react";
+import {Venus as FemaleIcon} from "lucide-react";
+import {House as CabinIcon} from "lucide-react";
+import {Users as PeopleAltIcon} from "lucide-react";
+import {Package as InventoryIcon} from "lucide-react";
+import {Megaphone as CampaignIcon} from "lucide-react";
+import {Tag as LabelIcon} from "lucide-react";
 
 export function DashboardPage() {
   const {
@@ -114,7 +114,7 @@ export function DashboardPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
           <div className="flex flex-col gap-1">
             <span className="flex items-center gap-1.5 text-[#7E8F82] text-[11px] font-inter font-medium uppercase tracking-wider">
-              <MaleIcon sx={{ fontSize: 14, color: "#3A82B0" }} />
+              <MaleIcon size={14} color="#3A82B0" />
               Machos
             </span>
             <span className="text-[#0E1A12] text-xl font-bold font-inter">
@@ -123,7 +123,7 @@ export function DashboardPage() {
           </div>
           <div className="flex flex-col gap-1">
             <span className="flex items-center gap-1.5 text-[#7E8F82] text-[11px] font-inter font-medium uppercase tracking-wider">
-              <FemaleIcon sx={{ fontSize: 14, color: "#B17A2B" }} />
+              <FemaleIcon size={14} color="#B17A2B" />
               Hembras
             </span>
             <span className="text-[#0E1A12] text-xl font-bold font-inter">
@@ -132,7 +132,7 @@ export function DashboardPage() {
           </div>
           <div className="flex flex-col gap-1">
             <span className="flex items-center gap-1.5 text-[#7E8F82] text-[11px] font-inter font-medium uppercase tracking-wider">
-              <CabinIcon sx={{ fontSize: 14, color: "#10A065" }} />
+              <CabinIcon size={14} color="#10A065" />
               Capacidad total
             </span>
             <span className="text-[#0E1A12] text-xl font-bold font-inter">
@@ -147,7 +147,7 @@ export function DashboardPage() {
           </div>
           <div className="flex flex-col gap-1">
             <span className="flex items-center gap-1.5 text-[#7E8F82] text-[11px] font-inter font-medium uppercase tracking-wider">
-              <PeopleAltIcon sx={{ fontSize: 14, color: "#3A82B0" }} />
+              <PeopleAltIcon size={14} color="#3A82B0" />
               Personal activo
             </span>
             <span className="text-[#0E1A12] text-xl font-bold font-inter">
@@ -156,7 +156,7 @@ export function DashboardPage() {
           </div>
           <div className="flex flex-col gap-1">
             <span className="flex items-center gap-1.5 text-[#7E8F82] text-[11px] font-inter font-medium uppercase tracking-wider">
-              <LabelIcon sx={{ fontSize: 14, color: "#7C5FA0" }} />
+              <LabelIcon size={14} color="#7C5FA0" />
               Categorías
             </span>
             <span className="text-[#0E1A12] text-xl font-bold font-inter">
@@ -165,7 +165,7 @@ export function DashboardPage() {
           </div>
           <div className="flex flex-col gap-1">
             <span className="flex items-center gap-1.5 text-[#7E8F82] text-[11px] font-inter font-medium uppercase tracking-wider">
-              <InventoryIcon sx={{ fontSize: 14, color: "#4F6354" }} />
+              <InventoryIcon size={14} color="#4F6354" />
               Unidades
             </span>
             <span className="text-[#0E1A12] text-xl font-bold font-inter">
@@ -174,7 +174,7 @@ export function DashboardPage() {
           </div>
           <div className="flex flex-col gap-1">
             <span className="flex items-center gap-1.5 text-[#7E8F82] text-[11px] font-inter font-medium uppercase tracking-wider">
-              <CampaignIcon sx={{ fontSize: 14, color: "#B17A2B" }} />
+              <CampaignIcon size={14} color="#B17A2B" />
               Campañas activas
             </span>
             <span className="text-[#0E1A12] text-xl font-bold font-inter">

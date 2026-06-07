@@ -1,10 +1,10 @@
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import CabinIcon from '@mui/icons-material/Cabin';
-import PeopleIcon from '@mui/icons-material/People';
-import PetsIcon from '@mui/icons-material/Pets';
+import {Check as CheckIcon} from "lucide-react"
+import {X as CloseIcon} from "lucide-react";
+import {Trash2 as DeleteIcon} from "lucide-react";
+import {Pencil as EditIcon} from "lucide-react";
+import {House as CabinIcon} from "lucide-react";
+import {Users as PeopleIcon} from "lucide-react";
+import {PawPrint as PetsIcon} from "lucide-react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useGlobalStore } from "../../shared/stores/global-store";
