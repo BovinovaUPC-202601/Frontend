@@ -36,7 +36,8 @@ export function DashboardCards() {
             icon: <CabinIcon />,
             items: stables.slice(0, 4).map(s => ({
                 label: s.name || "—",
-                detail: s.limit ? `Cap. ${s.limit}` : "—"
+                progress: s.limit ? { current: animals.filter(a => a.stableId === s.id).length, max: s.limit } : undefined,
+                detail: s.limit ? undefined : "—"
             }))
         },
         {

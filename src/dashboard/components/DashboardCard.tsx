@@ -1,12 +1,32 @@
 import type { ReactNode } from "react";
 
+interface ItemData {
+    label: string;
+    detail?: ReactNode;
+    progress?: { current: number; max: number };
+}
+
 interface DashboardCardProps {
     title: string;
     icon: ReactNode;
     content: string;
     discClass: string;
     iconClass: string;
-    items: { label: string; detail: ReactNode }[];
+    items: ItemData[];
+}
+
+function ItemProgress({ current, max }: { current: number; max: number }) {
+    const pct = max > 0 ? Math.min((current / max) * 100, 100) : 0;
+    const barColor = pct >= 100 ? "bg-[#D04A3A]" : pct >= 80 ? "bg-[#B17A2B]" : "bg-[#10A065]";
+
+    return (
+        <div className="flex items-center gap-2 shrink-0">
+            <div className="w-16 h-1.5 rounded-full bg-[#E1E7DF]">
+                <div className={`h-1.5 rounded-full ${barColor} transition-all duration-300`} style={{ width: `${pct}%` }} />
+            </div>
+            <span className="text-[#7E8F82] text-[10px] font-inter font-medium whitespace-nowrap">{current}/{max}</span>
+        </div>
+    );
 }
 
 export function DashboardCard(props: DashboardCardProps) {
@@ -26,7 +46,9 @@ export function DashboardCard(props: DashboardCardProps) {
                 {props.items.slice(0, 4).map((item, i) => (
                     <div key={i} className="flex items-center justify-between gap-2 py-0.5">
                         <span className="text-[#0E1A12] text-sm font-inter truncate">{item.label}</span>
-                        <span className="text-[#7E8F82] text-[11px] font-inter shrink-0">{item.detail}</span>
+                        {item.progress ? <ItemProgress current={item.progress.current} max={item.progress.max} /> : (
+                            <span className="text-[#7E8F82] text-[11px] font-inter shrink-0">{item.detail}</span>
+                        )}
                     </div>
                 ))}
                 {props.items.length === 0 && (

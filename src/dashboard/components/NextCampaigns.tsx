@@ -2,7 +2,7 @@ import type { Campaign } from "../model/campaign";
 import dayjs from "dayjs";
 import CampaignIcon from '@mui/icons-material/Campaign';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Pagination, PaginationItem } from "@mui/material";
 import { useGlobalStore } from "../../shared/stores/global-store";
 

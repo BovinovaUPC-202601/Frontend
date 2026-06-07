@@ -72,11 +72,6 @@ export function AnimalCard({ animal }: AnimalCardProps) {
   const photoUrl =
     typeof animal.bovineImg === "string" ? animal.bovineImg : null;
 
-  const inputClass =
-    "text-sm text-[#0E1A12] font-inter focus:outline-none bg-[#F4F8F2] border border-[#E1E7DF] px-3 py-1.5 rounded-[8px] w-full transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]";
-  const labelClass =
-    "text-[11px] font-medium text-[#4F6354] font-inter mb-0.5 block";
-
   const stableName =
     stables.find((s) => s.id === animal.stableId)?.name ?? "Sin asignar";
 

@@ -5,7 +5,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import CabinIcon from '@mui/icons-material/Cabin';
 import PeopleIcon from '@mui/icons-material/People';
 import PetsIcon from '@mui/icons-material/Pets';
-import CakeIcon from '@mui/icons-material/Cake';
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useGlobalStore } from "../../shared/stores/global-store";
