@@ -1,8 +1,8 @@
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
-import GrassIcon from "@mui/icons-material/Grass";
+import { CircleCheck as CheckCircleIcon } from "lucide-react";
+import { Medal as WorkspacePremiumIcon } from "lucide-react";
+import { Sprout as GrassIcon } from "lucide-react";
 import { useAuthStore } from "../../auth/store/auth-store";
 import { useSubscriptionStore } from "../stores/subscription-store";
 

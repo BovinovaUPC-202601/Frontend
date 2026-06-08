@@ -8,11 +8,19 @@ interface CampaignsState {
     statusFilter?: boolean;
     setSearchQuery: (query: string) => void;
     setStatusFilter: (status?: boolean) => void;
-    filterCampaigns: (staff: Campaign[]) => void;
+    filterCampaigns: (campaigns: Campaign[]) => void;
     filteredCampaigns: Campaign[];
     isFiltered: boolean;
 
-    // Modal & New Staff
+    // View mode
+    viewMode: "list" | "calendar";
+    setViewMode: (mode: "list" | "calendar") => void;
+
+    // Calendar
+    calendarDate: Date;
+    setCalendarDate: (date: Date) => void;
+
+    // Modal & New Campaign
     isOpenModal: boolean;
     toggleModal: () => void;
     newCampaign: Campaign;
@@ -34,28 +42,33 @@ export const useCampaignsStore = create(immer<CampaignsState>((set) => ({
     }),
     filterCampaigns: (campaigns) => set(state => {
         let filtered = campaigns;
-
         if (state.searchQuery.trim() !== "") {
             filtered = filtered.filter(s =>
                 s.name?.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
                 s.description?.toLowerCase().includes(state.searchQuery.toLowerCase())
             );
         }
-
         if (state.statusFilter !== undefined) {
             filtered = filtered.filter(s => s.isActive === state.statusFilter);
         }
-
         state.filteredCampaigns = filtered;
         state.isFiltered = state.searchQuery.trim() !== "" || state.statusFilter !== undefined;
     }),
     filteredCampaigns: [],
     isFiltered: false,
 
-    // Modal & New Staff
+    // View mode
+    viewMode: "list",
+    setViewMode: (mode) => set(state => { state.viewMode = mode }),
+
+    // Calendar
+    calendarDate: new Date(),
+    setCalendarDate: (date) => set(state => { state.calendarDate = date }),
+
+    // Modal & New Campaign
     isOpenModal: false,
     toggleModal: () => set(state => { state.isOpenModal = !state.isOpenModal }),
     newCampaign: new Campaign(),
     setNewCampaign: (campaign) => set(state => { state.newCampaign = { ...state.newCampaign, ...campaign } }),
-    resetNewCampaign: () => set(state => { state.newCampaign = new Campaign(); }),
+    resetNewCampaign: () => set(state => { state.newCampaign = new Campaign() }),
 })));

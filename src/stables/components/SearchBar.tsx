@@ -1,6 +1,4 @@
-import AddIcon from '@mui/icons-material/Add';
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
+import {Plus as AddIcon} from "lucide-react";
 import { useGlobalStore } from '../../shared/stores/global-store';
 import { useStableStore } from "../stores/stable-store";
 
@@ -9,35 +7,29 @@ export function SearchBar() {
     const { stables } = useGlobalStore();
 
     return (
-        <Card className="bg-neutral-100 font-mulish flex-1 border-1 border-neutral-300 shadow-none rounded-md">
-            <CardContent>
-                <div
-                    className="flex justify-between items-center"
-                >
-                    <div
-                        className="flex items-center w-1/2 gap-5"
-                    >
-                        <input
-                            className="focus:outline-none bg-white px-2 py-1 rounded-md border-1 border-neutral-300 flex-1"
-                            type="text"
-                            placeholder="Buscar establo por nombre"
-                            value={searchQuery}
-                            onChange={(e) => {
-                                setSearchQuery(e.target.value);
-                                filterStables(stables);
-                            }}
-                        />
-                    </div>
-
-                    <button
-                        className="cursor-pointer rounded-sm flex items-center gap-2 px-2 py-1 bg-brand-default text-white"
-                        onClick={toggleModal}
-                    >
-                        <AddIcon className="w-6 h-auto" />
-                        Añadir establo
-                    </button>
+        <div className="rounded-[16px] bg-white shadow-md border border-[#E1E7DF] p-4">
+            <div className="flex justify-between items-center gap-4">
+                <div className="flex items-center flex-1">
+                    <input
+                        className="focus:outline-none bg-white px-4 py-2.5 rounded-[12px] border border-[#E1E7DF] flex-1 font-inter text-sm text-[#0E1A12] placeholder-[#7E8F82] transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
+                        type="text"
+                        placeholder="Buscar establo por nombre"
+                        value={searchQuery}
+                        onChange={(e) => {
+                            setSearchQuery(e.target.value);
+                            filterStables(stables);
+                        }}
+                    />
                 </div>
-            </CardContent>
-        </Card>
+
+                <button
+                    className="cursor-pointer flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#10A065] to-[#0A7E4D] text-white font-inter font-medium text-sm rounded-[14px] h-12 transition-all duration-150 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.97]"
+                    onClick={toggleModal}
+                >
+                    <AddIcon className="w-5 h-5" />
+                    Añadir establo
+                </button>
+            </div>
+        </div>
     )
 }
