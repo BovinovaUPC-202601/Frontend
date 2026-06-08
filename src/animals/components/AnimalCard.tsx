@@ -10,6 +10,8 @@ import {Heart as FavoriteIcon} from "lucide-react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useGlobalStore } from "../../shared/stores/global-store";
+import { useAuthStore } from "../../auth/store/auth-store";
+import { CollarSection } from "../../collars/components/CollarSection";
 import { Animal } from "../model/animal";
 import dayjs from "dayjs";
 
@@ -19,6 +21,7 @@ interface AnimalCardProps {
 
 export function AnimalCard({ animal }: AnimalCardProps) {
   const { deleteAnimal, updateAnimal, stables } = useGlobalStore();
+  const isPlus = useAuthStore((s) => s.user.subscriptionPlan === "Plus");
 
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -233,6 +236,8 @@ export function AnimalCard({ animal }: AnimalCardProps) {
               />
             </div>
           </div>
+
+          {isPlus && <CollarSection bovineId={animal.id} />}
         </div>
       ) : (
         <div className="flex flex-col h-full">

@@ -23,7 +23,7 @@ interface GlobalState {
     // Animals
     animals: Animal[];
     fetchAnimals: () => Promise<void>;
-    addAnimal: (animal: Animal) => Promise<void>;
+    addAnimal: (animal: Animal) => Promise<Animal | undefined>;
     deleteAnimal: (animal: Animal) => Promise<void>;
     updateAnimal: (animal: Animal) => Promise<void>;
 
@@ -104,13 +104,16 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
         try {
             const res = await animalsService.addAnimal(animal);
             if (res.data) {
+                const created = new Animal(res.data);
                 set((state) => {
-                    state.animals.push(new Animal(res.data));
+                    state.animals.push(created);
                 });
+                return created;
             }
         } catch (error) {
             console.error(error);
         }
+        return undefined;
     },
     deleteAnimal: async (animal: Animal) => {
         try {

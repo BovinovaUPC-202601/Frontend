@@ -2,8 +2,11 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useGlobalStore } from "../../shared/stores/global-store";
 import { useAnimalStore } from "../stores/animals-store";
+import { useAuthStore } from "../../auth/store/auth-store";
+import { useCollarStore } from "../../collars/stores/collar-store";
+import { makeCollarDeviceId } from "../../collars/lib/collar-id";
 import dayjs from "dayjs";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {X as CloseIcon} from "lucide-react";
 import {ImagePlus as AddPhotoAlternateIcon} from "lucide-react";
 
@@ -16,9 +19,17 @@ export function AddAnimalDialog() {
   const { isOpenModal, toggleModal, newAnimal, setNewAnimal, resetNewAnimal } =
     useAnimalStore();
   const { addAnimal, stables } = useGlobalStore();
+  const isPlus = useAuthStore((s) => s.user.subscriptionPlan === "Plus");
+  const { capacity, register, fetchCollars, availableNumbers } = useCollarStore();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [validationError, setValidationError] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedCollar, setSelectedCollar] = useState<number | "">("");
+
+  // Load capacity so we can show remaining slots and block over-assignment.
+  useEffect(() => {
+    if (isPlus && isOpenModal) fetchCollars();
+  }, [isPlus, isOpenModal, fetchCollars]);
   const hasRequiredFields =
     Boolean(newAnimal.name?.trim()) &&
     Boolean(newAnimal.gender) &&
@@ -31,11 +42,15 @@ export function AddAnimalDialog() {
     newAnimal.minTemperature <= newAnimal.maxTemperature &&
     newAnimal.minHeartRate <= newAnimal.maxHeartRate;
 
+  // Match the backend [Range] exactly: BOTH min and max must sit inside the
+  // bounds, not just one side. Otherwise the form lets through values the API
+  // rejects with a 400 (e.g. max temp = 0).
+  const inRange = (v: number, lo: number, hi: number) => v >= lo && v <= hi;
   const isRangeValid =
-    newAnimal.minTemperature >= MIN_TEMP &&
-    newAnimal.maxTemperature <= MAX_TEMP &&
-    newAnimal.minHeartRate >= MIN_HR &&
-    newAnimal.maxHeartRate <= MAX_HR;
+    inRange(newAnimal.minTemperature, MIN_TEMP, MAX_TEMP) &&
+    inRange(newAnimal.maxTemperature, MIN_TEMP, MAX_TEMP) &&
+    inRange(newAnimal.minHeartRate, MIN_HR, MAX_HR) &&
+    inRange(newAnimal.maxHeartRate, MIN_HR, MAX_HR);
 
   const isCoherent =
     newAnimal.minTemperature <= newAnimal.maxTemperature &&
@@ -50,11 +65,13 @@ export function AddAnimalDialog() {
   const isBirthDateValid = newAnimal.birthDate
     ? !dayjs(newAnimal.birthDate).isAfter(dayjs())
     : false;
-  const canSubmit = hasRequiredFields && isBirthDateValid && isThresholdValid;
+  const canSubmit =
+    hasRequiredFields && isBirthDateValid && isThresholdValid && isRangeValid;
 
   const handleClose = () => {
     resetNewAnimal();
     setValidationError("");
+    setSelectedCollar("");
     toggleModal();
   };
 
@@ -100,7 +117,21 @@ export function AddAnimalDialog() {
     setValidationError("");
     setIsSubmitting(true);
     try {
-      await addAnimal(newAnimal);
+      const created = await addAnimal(newAnimal);
+
+      // Optional collar assignment (Plus only). Two-step: the bovine must exist
+      // first so we have an id to assign the collar to.
+      if (isPlus && created?.id && selectedCollar !== "") {
+        const ok = await register(makeCollarDeviceId(selectedCollar), created.id);
+        if (!ok) {
+          setValidationError(
+            "Bovino creado, pero el collar no se pudo asignar. Asignalo desde editar.",
+          );
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       handleClose();
     } finally {
       setIsSubmitting(false);
@@ -302,6 +333,41 @@ export function AddAnimalDialog() {
               </div>
             )}
           </div>
+
+          {/* Collar IoT (solo Plus) */}
+          {isPlus && (
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <label htmlFor="deviceId" className="text-sm font-medium text-[#0E1A12] font-inter">
+                  Collar IoT (opcional)
+                </label>
+                <span className="text-[11px] text-[#7E8F82] font-inter">
+                  {capacity.remaining}/{capacity.allowance} disponibles
+                </span>
+              </div>
+              <select
+                id="deviceId"
+                disabled={capacity.remaining <= 0}
+                className="focus:outline-none border border-[#E1E7DF] px-3 py-2.5 rounded-[10px] text-sm text-[#0E1A12] font-inter transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA] disabled:bg-[#F4F8F2] disabled:text-[#7E8F82]"
+                value={selectedCollar}
+                onChange={(e) =>
+                  setSelectedCollar(e.target.value === "" ? "" : Number(e.target.value))
+                }
+              >
+                <option value="">Sin collar</option>
+                {availableNumbers().map((n) => (
+                  <option key={n} value={n}>
+                    Collar {n}
+                  </option>
+                ))}
+              </select>
+              {capacity.remaining <= 0 && (
+                <span className="text-[11px] text-[#7E8F82] font-inter italic">
+                  Sin collares disponibles. Solicitá uno adicional en Suscripción.
+                </span>
+              )}
+            </div>
+          )}
 
           {validationError && (
             <span className="text-[#D04A3A] text-sm text-center font-inter">

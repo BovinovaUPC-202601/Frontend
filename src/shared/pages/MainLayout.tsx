@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router";
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
@@ -17,18 +17,21 @@ import {Sparkles as AutoAwesomeIcon} from "lucide-react";
 import {LogOut as LogoutIcon} from "lucide-react";
 import { useAuthStore } from "../../auth/store/auth-store";
 import { useGlobalStore } from "../stores/global-store";
+import { useSubscriptionStore } from "../../subscription/stores/subscription-store";
 import { AlertToaster } from "../../alerts/components/AlertToaster";
 
-const navItems = [
+type NavItem = { to: string; icon: ReactNode; label: string; plusOnly?: boolean };
+
+const navItems: NavItem[] = [
     { to: "/dashboard", icon: <DashboardIcon />, label: "Panel" },
     { to: "/animals", icon: <PetsIcon />, label: "Ganado" },
     { to: "/stables", icon: <CabinIcon />, label: "Establos" },
     { to: "/campaigns", icon: <CampaignIcon />, label: "Campañas" },
     { to: "/staff", icon: <PeopleAltIcon />, label: "Personal" },
     { to: "/inventory", icon: <InventoryIcon />, label: "Inventario" },
-    { to: "/monitoring", icon: <MonitorHeartIcon />, label: "Monitoreo" },
+    { to: "/monitoring", icon: <MonitorHeartIcon />, label: "Monitoreo", plusOnly: true },
     { to: "/alerts", icon: <NotificationsIcon />, label: "Alertas" },
-    { to: "/ai-assistant", icon: <AutoAwesomeIcon />, label: "Asistente IA" },
+    { to: "/ai-assistant", icon: <AutoAwesomeIcon />, label: "Asistente IA", plusOnly: true },
     { to: "/subscription-management", icon: <AutoAwesomeIcon />, label: "Suscripción" },
 ];
 
@@ -36,6 +39,7 @@ function SidebarContent({ expanded, onToggle, onNavigate }: { expanded: boolean;
     const user = useAuthStore(s => s.user);
     const info = useGlobalStore(s => s.info);
     const logout = useAuthStore(s => s.logout);
+    const isPlus = useAuthStore(s => s.user.subscriptionPlan === "Plus");
     const navigate = useNavigate();
     const displayName = info?.name || user?.username || user?.email?.split('@')[0] || "Usuario";
     const initials = displayName.slice(0, 2).toUpperCase();
@@ -92,7 +96,7 @@ function SidebarContent({ expanded, onToggle, onNavigate }: { expanded: boolean;
             </div>
 
             <nav className={`flex-1 flex flex-col gap-0.5 transition-all duration-300 ${expanded ? 'p-3 mt-2' : 'p-2 mt-3 items-center'}`}>
-                {navItems.map(item => (
+                {navItems.filter(item => !item.plusOnly || isPlus).map(item => (
                     <NavLink
                         key={item.to}
                         to={item.to}
@@ -134,6 +138,13 @@ function SidebarContent({ expanded, onToggle, onNavigate }: { expanded: boolean;
 export function MainLayout() {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [sidebarExpanded, setSidebarExpanded] = useState(true);
+    const fetchCurrentPlan = useSubscriptionStore(state => state.fetchCurrentPlan);
+
+    // Load the real plan from the backend on mount so gating survives refresh
+    // (the auth store resets on reload while the token persists in localStorage).
+    useEffect(() => {
+        fetchCurrentPlan();
+    }, [fetchCurrentPlan]);
 
     return (
         <div className="min-h-screen bg-[#D8E8DD]">
