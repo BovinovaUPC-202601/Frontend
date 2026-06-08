@@ -4,6 +4,18 @@ import { User } from "../model/user";
 import { authService } from "../services/auth-service";
 import { useGlobalStore } from "../../shared/stores/global-store";
 
+// Pulls the most useful message out of an axios error. Prefers the message the
+// API sent back ({ message } or a plain string body); falls back to a friendly
+// default so the user never sees a raw "Network Error".
+function extractApiErrorMessage(error: any, fallback: string): string {
+    const data = error?.response?.data;
+    if (data) {
+        if (typeof data === "string" && data.trim()) return data;
+        if (typeof data.message === "string" && data.message.trim()) return data.message;
+    }
+    return fallback;
+}
+
 interface AuthState {
     user: User;
     error: string | null;
@@ -46,7 +58,10 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
             return true;
         } catch (error: any) {
             console.error("Login failed:", error);
-            set(state => { state.error = `Error al iniciar sesión: ${error.message}`; });
+            set(state => {
+                state.error = extractApiErrorMessage(
+                    error, "No se pudo iniciar sesión. Verifica tus credenciales e inténtalo de nuevo.");
+            });
             return false;
         } finally {
             set(state => { state.isLoading = false; });
@@ -66,7 +81,10 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
             return true;
         } catch (error: any) {
             console.error("Registration failed:", error);
-            set(state => { state.error = `Error al registrar el usuario: ${error.message}`; });
+            set(state => {
+                state.error = extractApiErrorMessage(
+                    error, "No se pudo registrar el usuario. Inténtalo de nuevo.");
+            });
             return false;
         } finally {
             set(state => { state.isLoading = false; });
