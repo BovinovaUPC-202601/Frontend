@@ -114,7 +114,7 @@ export function CollarSection({ bovineId }: CollarSectionProps) {
                                 disabled={loading}
                                 onClick={() => {
                                     setChanging(false);
-                                    setDeviceId("");
+                                    setSelectedNumber("");
                                 }}
                                 className="text-xs px-2 py-1 rounded-sm border border-neutral-300 text-neutral-600 hover:bg-neutral-200"
                             >

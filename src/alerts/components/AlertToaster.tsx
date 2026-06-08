@@ -4,7 +4,7 @@ import MuiAlert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
+import {X as CloseIcon} from "lucide-react";
 import Slide from "@mui/material/Slide";
 import { useAlertsStore } from "../stores/alerts-store";
 import { useGlobalStore } from "../../shared/stores/global-store";
@@ -49,7 +49,7 @@ function ToastItem({ alert, onView }: { alert: Alert; onView: () => void }) {
               aria-label="cerrar"
               onClick={() => dismissToast(alert.id)}
             >
-              <CloseIcon fontSize="small" />
+              <CloseIcon size={16} />
             </IconButton>
           </div>
         }

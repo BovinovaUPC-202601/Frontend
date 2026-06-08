@@ -1,16 +1,19 @@
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
+import {Check as CheckIcon} from "lucide-react"
+import {X as CloseIcon} from "lucide-react";
+import {Trash2 as DeleteIcon} from "lucide-react";
+import {Pencil as EditIcon} from "lucide-react";
+import {Cake as CakeIcon} from "lucide-react"
+import {PawPrint as PetsIcon} from "lucide-react";
+import {House as HomeIcon} from "lucide-react";
+import {Thermometer as DeviceThermostatIcon} from "lucide-react";
+import {Heart as FavoriteIcon} from "lucide-react";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useGlobalStore } from "../../shared/stores/global-store";
 import { useAuthStore } from "../../auth/store/auth-store";
 import { CollarSection } from "../../collars/components/CollarSection";
 import { Animal } from "../model/animal";
 import dayjs from "dayjs";
-import Avatar from "@mui/material/Avatar";
 
 interface AnimalCardProps {
   animal: Animal;
@@ -21,6 +24,7 @@ export function AnimalCard({ animal }: AnimalCardProps) {
   const isPlus = useAuthStore((s) => s.user.subscriptionPlan === "Plus");
 
   const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editedName, setEditedName] = useState(animal.name);
   const [editedGender, setEditedGender] = useState(animal.gender);
   const [editedBirthDate, setEditedBirthDate] = useState(animal.birthDate);
@@ -60,151 +64,343 @@ export function AnimalCard({ animal }: AnimalCardProps) {
     setIsEditing(false);
   };
 
+  const isFemale = animal.gender?.toLowerCase() === "female";
+  const genderSymbol = isFemale ? "♀" : "♂";
+  const genderLabel = isFemale ? "Hembra" : "Macho";
+  const genderColor = isFemale ? "text-[#B17A2B]" : "text-[#3A82B0]";
+  const genderBg = isFemale ? "bg-[#FFE9C8]" : "bg-[#CFE6F2]";
+  const genderPillBg = isFemale ? "bg-[#FFE9C8]" : "bg-[#CFE6F2]";
+  const genderPillText = isFemale ? "text-[#B17A2B]" : "text-[#3A82B0]";
+  const accentBorder = isFemale ? "border-[#FFE9C8]" : "border-[#CFE6F2]";
+  const photoUrl =
+    typeof animal.bovineImg === "string" ? animal.bovineImg : null;
+
+  const stableName =
+    stables.find((s) => s.id === animal.stableId)?.name ?? "Sin asignar";
+
   return (
-    <Card className="bg-neutral-100 font-mulish border-1 border-neutral-300 shadow-none rounded-md">
-      <CardContent>
-        <div className="flex justify-between items-center gap-2">
-          <div className="flex flex-col gap-1">
-            {isEditing ? (
-              <>
-                <div className="flex items-center gap-2">
-                  <Avatar
-                    src={String(animal.bovineImg)}
-                    className="w-15 h-15"
-                  />
+    <div
+      className={`rounded-[16px] bg-white shadow-md border-l-[4px] ${accentBorder} p-4 transition-all duration-150 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98]`}
+    >
+      {isEditing ? (
+        <div className="flex flex-col h-full">
+          {/* Top: photo + name + actions */}
+          <div className="flex gap-4">
+            <div
+              className={`w-20 h-20 rounded-full ${genderBg} flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-white shadow-md`}
+            >
+              {photoUrl ? (
+                <img
+                  src={photoUrl}
+                  alt={animal.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className={`text-3xl font-bold ${genderColor}`}>
+                  {genderSymbol}
+                </span>
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
                   <input
-                    className="text-lg font-semibold text-neutral-800 focus:outline-none bg-white border-neutral-300 border-1 py-1 px-2 w-full rounded-md"
+                    className="text-lg font-bold text-[#0E1A12] font-inter focus:outline-none bg-[#F4F8F2] border border-[#E1E7DF] px-3 py-1.5 rounded-[8px] w-full transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
                     value={editedName}
                     onChange={(e) => setEditedName(e.target.value)}
                   />
+                  <div className="mt-1">
+                    <label className="text-[11px] font-medium text-[#4F6354] font-inter block">
+                      Género
+                    </label>
+                    <select
+                      className="text-sm font-medium font-inter focus:outline-none bg-[#F4F8F2] border border-[#E1E7DF] px-2.5 py-1 rounded-[8px] w-full transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
+                      value={editedGender}
+                      onChange={(e) => setEditedGender(e.target.value)}
+                    >
+                      <option value="male">♂ Macho</option>
+                      <option value="female">♀ Hembra</option>
+                    </select>
+                  </div>
                 </div>
-                <select
-                  className="text-sm text-neutral-500 focus:outline-none bg-white border-1 py-1 px-2 rounded-md border-neutral-300 w-full"
-                  value={editedGender}
-                  onChange={(e) => setEditedGender(e.target.value)}
-                >
-                  <option value="male">Macho</option>
-                  <option value="female">Hembra</option>
-                </select>
-                <input
-                  type="date"
-                  className="text-sm text-neutral-500 focus:outline-none bg-white border-1 py-1 px-2 rounded-md border-neutral-300 w-full"
-                  value={editedBirthDate}
-                  onChange={(e) => setEditedBirthDate(e.target.value)}
-                />
-                <input
-                  className="text-sm text-neutral-500 focus:outline-none bg-white border-1 py-1 px-2 rounded-md border-neutral-300 w-full"
-                  value={editedBreed}
-                  onChange={(e) => setEditedBreed(e.target.value)}
-                />
-                <select
-                  className="text-sm text-neutral-500 focus:outline-none bg-white border-1 py-1 px-2 rounded-md border-neutral-300 w-full"
-                  value={editedStableId}
-                  onChange={(e) => setEditedStableId(Number(e.target.value))}
-                >
-                  {stables.map((stable) => (
-                    <option key={stable.id} value={stable.id}>
-                      {stable.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="number"
-                    step="0.1"
-                    className="text-sm text-neutral-500 focus:outline-none bg-white border-1 py-1 px-2 rounded-md border-neutral-300 w-full"
-                    value={editedMinTemp}
-                    onChange={(e) => setEditedMinTemp(Number(e.target.value))}
-                    placeholder="Temp Min"
-                  />
-                  <input
-                    type="number"
-                    step="0.1"
-                    className="text-sm text-neutral-500 focus:outline-none bg-white border-1 py-1 px-2 rounded-md border-neutral-300 w-full"
-                    value={editedMaxTemp}
-                    onChange={(e) => setEditedMaxTemp(Number(e.target.value))}
-                    placeholder="Temp Max"
-                  />
-                  <input
-                    type="number"
-                    className="text-sm text-neutral-500 focus:outline-none bg-white border-1 py-1 px-2 rounded-md border-neutral-300 w-full"
-                    value={editedMinHeart}
-                    onChange={(e) => setEditedMinHeart(Number(e.target.value))}
-                    placeholder="HR Min"
-                  />
-                  <input
-                    type="number"
-                    className="text-sm text-neutral-500 focus:outline-none bg-white border-1 py-1 px-2 rounded-md border-neutral-300 w-full"
-                    value={editedMaxHeart}
-                    onChange={(e) => setEditedMaxHeart(Number(e.target.value))}
-                    placeholder="HR Max"
-                  />
+                <div className="flex gap-1 shrink-0 ml-2">
+                  <button
+                    className="p-1.5 rounded-[8px] text-[#10A065] hover:bg-[#C8F0DA] transition-all duration-150"
+                    onClick={handleSave}
+                    title="Guardar"
+                  >
+                    <CheckIcon className="w-4 h-4" />
+                  </button>
+                  <button
+                    className="p-1.5 rounded-[8px] text-[#D04A3A] hover:bg-[#FFD9D2] transition-all duration-150"
+                    onClick={handleCancel}
+                    title="Cancelar"
+                  >
+                    <CloseIcon className="w-4 h-4" />
+                  </button>
                 </div>
+              </div>
+            </div>
+          </div>
 
-                {isPlus && <CollarSection bovineId={animal.id} />}
-              </>
-            ) : (
-              <>
-                <span className="flex items-center gap-2 text-lg font-semibold text-neutral-800 py-1 px-2 w-full border-1 border-transparent">
-                  <Avatar
-                    src={String(animal.bovineImg)}
-                    className="w-15 h-15"
-                  />
-                  {animal.name}
+          {/* Accent line */}
+          <div
+            className={`h-px bg-gradient-to-r ${isFemale ? "from-[#FFE9C8]" : "from-[#CFE6F2]"} to-transparent my-3`}
+          />
+
+          {/* Data grid */}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+            <div>
+              <label className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block mb-0.5">
+                Fecha de nacimiento
+              </label>
+              <input
+                type="date"
+                className="text-sm text-[#0E1A12] font-inter focus:outline-none bg-[#F4F8F2] border border-[#E1E7DF] px-2.5 py-1.5 rounded-[8px] w-full transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
+                value={editedBirthDate}
+                onChange={(e) => setEditedBirthDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block mb-0.5">
+                Raza
+              </label>
+              <input
+                className="text-sm text-[#0E1A12] font-inter focus:outline-none bg-[#F4F8F2] border border-[#E1E7DF] px-2.5 py-1.5 rounded-[8px] w-full transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
+                value={editedBreed}
+                onChange={(e) => setEditedBreed(e.target.value)}
+                placeholder="Holstein"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block mb-0.5">
+                Establo
+              </label>
+              <select
+                className="text-sm text-[#0E1A12] font-inter focus:outline-none bg-[#F4F8F2] border border-[#E1E7DF] px-2.5 py-1.5 rounded-[8px] w-full transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
+                value={editedStableId}
+                onChange={(e) => setEditedStableId(Number(e.target.value))}
+              >
+                {stables.map((stable) => (
+                  <option key={stable.id} value={stable.id}>
+                    {stable.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block mb-0.5">
+                Temp. Mín (°C)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                className="text-sm text-[#0E1A12] font-inter focus:outline-none bg-[#F4F8F2] border border-[#E1E7DF] px-2.5 py-1.5 rounded-[8px] w-full transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
+                value={editedMinTemp}
+                onChange={(e) => setEditedMinTemp(Number(e.target.value))}
+              />
+            </div>
+            <div>
+              <label className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block mb-0.5">
+                Temp. Máx (°C)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                className="text-sm text-[#0E1A12] font-inter focus:outline-none bg-[#F4F8F2] border border-[#E1E7DF] px-2.5 py-1.5 rounded-[8px] w-full transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
+                value={editedMaxTemp}
+                onChange={(e) => setEditedMaxTemp(Number(e.target.value))}
+              />
+            </div>
+            <div>
+              <label className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block mb-0.5">
+                HR Mín (BPM)
+              </label>
+              <input
+                type="number"
+                className="text-sm text-[#0E1A12] font-inter focus:outline-none bg-[#F4F8F2] border border-[#E1E7DF] px-2.5 py-1.5 rounded-[8px] w-full transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
+                value={editedMinHeart}
+                onChange={(e) => setEditedMinHeart(Number(e.target.value))}
+              />
+            </div>
+            <div>
+              <label className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block mb-0.5">
+                HR Máx (BPM)
+              </label>
+              <input
+                type="number"
+                className="text-sm text-[#0E1A12] font-inter focus:outline-none bg-[#F4F8F2] border border-[#E1E7DF] px-2.5 py-1.5 rounded-[8px] w-full transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
+                value={editedMaxHeart}
+                onChange={(e) => setEditedMaxHeart(Number(e.target.value))}
+              />
+            </div>
+          </div>
+
+          {isPlus && <CollarSection bovineId={animal.id} />}
+        </div>
+      ) : (
+        <div className="flex flex-col h-full">
+          {/* Top: photo + name + actions */}
+          <div className="flex gap-4">
+            <div
+              className={`w-20 h-20 rounded-full ${genderBg} flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-white shadow-md`}
+            >
+              {photoUrl ? (
+                <img
+                  src={photoUrl}
+                  alt={animal.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className={`text-3xl font-bold ${genderColor}`}>
+                  {genderSymbol}
                 </span>
-                <span className="text-sm text-neutral-500 py-1 px-2 w-full border-1 border-transparent">
-                  Género:{" "}
-                  {animal.gender.toLowerCase() == "male" ? "Macho" : "Hembra"}
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="text-[#0E1A12] text-lg font-bold font-inter truncate">
+                    {animal.name}
+                  </h3>
+                  <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                    <span
+                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium font-inter ${genderPillBg} ${genderPillText}`}
+                    >
+                      {genderSymbol} {genderLabel}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex gap-1 shrink-0 ml-2">
+                  <button
+                    className="p-1.5 rounded-[8px] text-[#7E8F82] hover:text-[#10A065] hover:bg-[#C8F0DA] transition-all duration-150"
+                    onClick={() => setIsEditing(true)}
+                    title="Editar"
+                  >
+                    <EditIcon className="w-4 h-4" />
+                  </button>
+                  <button
+                    className="p-1.5 rounded-[8px] text-[#7E8F82] hover:text-[#D04A3A] hover:bg-[#FFD9D2] transition-all duration-150"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    title="Eliminar"
+                  >
+                    <DeleteIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Accent line */}
+          <div
+            className={`h-px bg-gradient-to-r ${isFemale ? "from-[#FFE9C8]" : "from-[#CFE6F2]"} to-transparent my-3`}
+          />
+
+          {/* Data grid */}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+            <div className="flex items-center gap-2">
+              <CakeIcon className="w-3.5 h-3.5 text-[#7E8F82] shrink-0" />
+              <div>
+                <span className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block">
+                  Nacimiento
                 </span>
-                <span className="text-sm text-neutral-500 py-1 px-2 w-full border-1 border-transparent">
-                  Fecha de nacimiento:{" "}
+                <span className="text-[#0E1A12] text-sm font-medium font-inter">
                   {dayjs(animal.birthDate).format("DD/MM/YYYY")}
                 </span>
-                <span className="text-sm text-neutral-500 py-1 px-2 w-full border-1 border-transparent">
-                  Raza: {animal.breed}
+                <span className="text-[#7E8F82] text-xs font-inter ml-1">
+                  · {dayjs().diff(dayjs(animal.birthDate), "year")} años
                 </span>
-                <span className="text-sm text-neutral-500 py-1 px-2 w-full border-1 border-transparent">
-                  Establo:{" "}
-                  {stables.find((s) => s.id === animal.stableId)?.name ??
-                    "Sin asignar"}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <PetsIcon className="w-3.5 h-3.5 text-[#7E8F82] shrink-0" />
+              <div>
+                <span className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block">
+                  Raza
                 </span>
-                <span className="text-sm text-neutral-500 py-1 px-2">
-                  Temp: {animal.minTemperature}°C - {animal.maxTemperature}°C
+                <span className="text-[#0E1A12] text-sm font-medium font-inter">
+                  {animal.breed}
                 </span>
-                <span className="text-sm text-neutral-500 py-1 px-2">
-                  Ritmo Card: {animal.minHeartRate} - {animal.maxHeartRate} BPM
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <HomeIcon className="w-3.5 h-3.5 text-[#7E8F82] shrink-0" />
+              <div>
+                <span className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block">
+                  Establo
                 </span>
-              </>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-2 items-center">
-            {isEditing ? (
-              <>
-                <CheckIcon
-                  className="w-6 h-auto cursor-pointer text-neutral-500 hover:text-state-success"
-                  onClick={handleSave}
-                />
-                <CloseIcon
-                  className="w-6 h-auto cursor-pointer text-neutral-500 hover:text-state-error"
-                  onClick={handleCancel}
-                />
-              </>
-            ) : (
-              <>
-                <EditIcon
-                  className="w-6 h-auto cursor-pointer text-neutral-500 hover:text-neutral-900"
-                  onClick={() => setIsEditing(true)}
-                />
-                <DeleteIcon
-                  className="w-6 h-auto cursor-pointer text-neutral-500 hover:text-state-error"
-                  onClick={() => deleteAnimal(animal)}
-                />
-              </>
-            )}
+                <span className="text-[#0E1A12] text-sm font-medium font-inter truncate">
+                  {stableName}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <DeviceThermostatIcon className="w-3.5 h-3.5 text-[#10A065] shrink-0" />
+              <div>
+                <span className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block">
+                  Temperatura
+                </span>
+                <span className="text-[#0E1A12] text-sm font-medium font-inter">
+                  {animal.minTemperature}°C - {animal.maxTemperature}°C
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <FavoriteIcon className="w-3.5 h-3.5 text-[#D04A3A] shrink-0" />
+              <div>
+                <span className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block">
+                  Ritmo Cardíaco
+                </span>
+                <span className="text-[#0E1A12] text-sm font-medium font-inter">
+                  {animal.minHeartRate} - {animal.maxHeartRate} BPM
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      )}
+
+      {showDeleteConfirm &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowDeleteConfirm(false)}
+          >
+            <div
+              className="bg-white rounded-[20px] shadow-xl w-full max-w-sm mx-4 p-6 animate-fade-in"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-bold text-[#0E1A12] font-inter mb-2">
+                Eliminar animal
+              </h3>
+              <p className="text-sm text-[#4F6354] font-inter mb-6">
+                ¿Estás seguro de que querés eliminar a{" "}
+                <strong>{animal.name}</strong>? Esta acción no se puede
+                deshacer.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  className="cursor-pointer px-4 py-2 rounded-[12px] text-sm font-medium text-[#4F6354] font-inter bg-[#F4F8F2] hover:bg-[#E1E7DF] transition-all duration-150"
+                  onClick={() => setShowDeleteConfirm(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="cursor-pointer px-4 py-2 rounded-[12px] text-sm font-medium text-white font-inter bg-gradient-to-r from-[#D04A3A] to-[#B33A2E] transition-all duration-150 hover:shadow-lg active:scale-[0.97]"
+                  onClick={() => {
+                    deleteAnimal(animal);
+                    setShowDeleteConfirm(false);
+                  }}
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+    </div>
   );
 }

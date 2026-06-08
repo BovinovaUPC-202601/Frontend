@@ -1,12 +1,12 @@
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import ImageSearchIcon from "@mui/icons-material/ImageSearch";
-import PetsIcon from "@mui/icons-material/Pets";
-import SendIcon from "@mui/icons-material/Send";
-import SmartToyIcon from "@mui/icons-material/SmartToy";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
-import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
+import {Sparkles as AutoAwesomeIcon} from "lucide-react";
+import {CircleCheck as CheckCircleIcon} from "lucide-react";
+import {CircleAlert as ErrorOutlineIcon} from "lucide-react";
+import {Search as ImageSearchIcon} from "lucide-react";
+import {PawPrint as PetsIcon} from "lucide-react";
+import {Send as SendIcon} from "lucide-react"
+import {Bot as SmartToyIcon} from "lucide-react";
+import {FileUp as UploadFileIcon} from "lucide-react";
+import {Medal as WorkspacePremiumIcon} from "lucide-react";
 import CircularProgress from "@mui/material/CircularProgress";
 import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -622,7 +622,7 @@ export function AIAssistantPage() {
                                 </div>
 
                                 <div className="flex gap-2 text-sm text-neutral-600">
-                                    <CheckCircleIcon className="mt-0.5 text-brand-default" fontSize="small" />
+                                    <CheckCircleIcon className="mt-0.5 text-brand-default" size={16} />
                                     <span>{analysisResult.visibleIssues}</span>
                                 </div>
 

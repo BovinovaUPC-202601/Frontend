@@ -4,6 +4,22 @@ import { User } from "../model/user";
 import { authService } from "../services/auth-service";
 import { useGlobalStore } from "../../shared/stores/global-store";
 
+function loadUser(): User {
+    try {
+        const raw = localStorage.getItem("user");
+        if (raw) return new User(JSON.parse(raw));
+    } catch { /* ignore */ }
+    return new User();
+}
+
+function saveUser(user: User) {
+    localStorage.setItem("user", JSON.stringify({ username: user.username, email: user.email }));
+}
+
+function clearUser() {
+    localStorage.removeItem("user");
+}
+
 // Pulls the most useful message out of an axios error. Prefers the message the
 // API sent back ({ message } or a plain string body); falls back to a friendly
 // default so the user never sees a raw "Network Error".
@@ -33,7 +49,7 @@ interface AuthState {
 }
 
 export const useAuthStore = create(immer<AuthState>((set, get) => ({
-    user: new User(),
+    user: loadUser(),
     error: null,
     isLoading: false,
     planLoaded: false,
@@ -41,6 +57,7 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
     setError: (error: string | null) => set(state => { state.error = error; }),
     logout: () => {
         localStorage.removeItem("token");
+        clearUser();
         set(state => {
             state.user = new User();
             state.error = null;
@@ -54,6 +71,7 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
             const { user } = get();
             const res = await authService.login(user);
             if (res.data.token) localStorage.setItem("token", res.data.token);
+            saveUser(user);
             await useGlobalStore.getState().loadAppData();
             return true;
         } catch (error: any) {
@@ -77,6 +95,7 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
         try {
             const res = await authService.register(user);
             if (res.data.token) localStorage.setItem("token", res.data.token);
+            saveUser(user);
             await useGlobalStore.getState().loadAppData();
             return true;
         } catch (error: any) {

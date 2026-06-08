@@ -31,10 +31,52 @@
 
     --font-rokkitt: "Rokkitt", serif;
     --font-mulish: "Mulish", sans-serif;
+
+    --color-emerald-40: #10A065;
+    --color-emerald-30: #0A7E4D;
+    --color-emerald-80: #6FD4A4;
+    --color-emerald-90: #C8F0DA;
+    --color-emerald-container: #DCF5E6;
+
+    --color-sage-40: #4A6B5A;
+    --color-sage-90: #D8E8DD;
+
+    --color-sand-40: #B17A2B;
+    --color-sand-90: #FFE9C8;
+
+    --color-sky-40: #3A82B0;
+    --color-sky-90: #CFE6F2;
+
+    --color-cream-95: #F4F8F2;
+    --color-stone-90: #E1E7DF;
+    --color-stone-80: #C5CCBE;
+    --color-on-surface: #0E1A12;
+    --color-on-surface-variant: #4F6354;
+    --color-outline: #7E8F82;
+
+    --color-error-40: #D04A3A;
+    --color-error-80: #FFB4A8;
+    --color-error-container: #FFD9D2;
+
+    --color-hero-gradient-start: #B8E4CB;
+    --color-hero-gradient-mid: #DCF1DE;
+    --color-hero-gradient-end: #F4F8F2;
+    --color-primary-button-gradient-start: #10A065;
+    --color-primary-button-gradient-end: #0A7E4D;
+
+    --font-inter: "Inter", sans-serif;
 }
 
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+    animation: fade-in 0.4s ease-out;
 }
