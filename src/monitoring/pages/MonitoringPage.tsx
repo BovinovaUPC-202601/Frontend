@@ -2,11 +2,13 @@ import { useEffect } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useGlobalStore } from "../../shared/stores/global-store";
 import { useMonitoringStore } from "../stores/monitoring-store";
+import { useCollarStore } from "../../collars/stores/collar-store";
 import { LatestRecordCard } from "../components/LatestRecordCard";
 import { HistoryList } from "../components/HistoryList";
 
 export function MonitoringPage() {
     const { animals, fetchAnimals } = useGlobalStore();
+    const { collarForBovine, fetchCollars } = useCollarStore();
     const {
         selectedBovineId,
         setSelectedBovineId,
@@ -19,7 +21,11 @@ export function MonitoringPage() {
 
     useEffect(() => {
         fetchAnimals();
+        fetchCollars();
     }, []);
+
+    // Only bovines with a collar can stream IoT data, so the rest are hidden here.
+    const monitorableAnimals = animals.filter(a => collarForBovine(a.id));
 
     // Auto-refresh (polling): re-fetch every 5s while a bovine is selected
     useEffect(() => {
@@ -50,12 +56,17 @@ export function MonitoringPage() {
                     onChange={handleSelect}
                 >
                     <option value="" disabled>-- Elegir bovino --</option>
-                    {animals.map(animal => (
+                    {monitorableAnimals.map(animal => (
                         <option key={animal.id} value={animal.id}>
-                            {animal.name} (ID: {animal.id})
+                            {animal.name}
                         </option>
                     ))}
                 </select>
+                {monitorableAnimals.length === 0 && (
+                    <span className="text-xs text-neutral-400 italic">
+                        No tenés bovinos con collar asignado. Asigná un collar para monitorear.
+                    </span>
+                )}
             </div>
 
             {/* Loading */}

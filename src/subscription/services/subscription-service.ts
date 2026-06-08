@@ -1,12 +1,18 @@
 import http from "../../shared/services/http";
 
 export class SubscriptionService {
-    private endpoint = import.meta.env.VITE_API_BASE_URL + "/users/subscription";
+    private endpoint = import.meta.env.VITE_API_BASE_URL + "/subscriptions";
 
-    async updateSubscription(subscriptionPlan: string) {
-        return await http.put(this.endpoint, {
-            subscriptionPlan
-        });
+    async activatePlus() {
+        return await http.post(`${this.endpoint}/plus/activate`, {});
+    }
+
+    async cancel() {
+        return await http.post(`${this.endpoint}/cancel`, {});
+    }
+
+    async getCurrent() {
+        return await http.get(`${this.endpoint}/current`);
     }
 }
 
