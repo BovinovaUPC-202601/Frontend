@@ -2,9 +2,9 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Chip from "@mui/material/Chip";
 import Button from "@mui/material/Button";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import ErrorIcon from "@mui/icons-material/Error";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import {TriangleAlert as WarningAmberIcon} from "lucide-react";
+import {CircleAlert as ErrorIcon} from "lucide-react";
+import {CircleCheck as CheckCircleOutlineIcon} from "lucide-react";
 import dayjs from "dayjs";
 import type { Alert } from "../model/alert";
 
@@ -44,12 +44,12 @@ export function AlertCard({ alert, onMarkAsRead }: Props) {
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex flex-col gap-2 flex-1">
                         <div className="flex items-center gap-2">
-                            <UrgencyIcon className={`${iconColor}`} fontSize="small" />
+                            <UrgencyIcon className={`${iconColor}`} size={16} />
                             <span className="text-sm font-semibold text-neutral-700">{alert.message}</span>
                         </div>
 
                         <div className="flex gap-2 flex-wrap">
-                            <Chip label={alert.alertType}    size="small" variant="outlined" />
+                            <Chip label={alert.alertTypeLabel} size="small" variant="outlined" />
                             <Chip label={alert.urgencyLevel} size="small" variant="outlined"
                                 color={alert.isRed ? 'error' : alert.isYellow ? 'warning' : 'success'} />
                             <Chip label={alert.isUnread ? 'No leída' : 'Leída'} size="small"

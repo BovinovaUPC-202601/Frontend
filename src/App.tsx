@@ -8,8 +8,10 @@ import { InventoryPage } from "./inventory/pages/InventoryPage"
 import { AlertsPage } from "./alerts/pages/AlertsPage"
 import { MonitoringPage } from "./monitoring/pages/MonitoringPage"
 import { PrivateRoute } from "./shared/pages/PrivateRoute"
+import { PlusRoute } from "./shared/pages/PlusRoute"
 import { StablesPage } from "./stables/pages/StablesPage"
 import { StaffPage } from "./staff/pages/StaffPage"
+import { SubscriptionManagementPage} from "./subscription/pages/SubscriptionManagementPage"
 
 function App() {
   return (
@@ -24,9 +26,13 @@ function App() {
         <Route path="/campaigns" element={<CampaignsPage />} />
         <Route path="/staff" element={<StaffPage />} />
         <Route path="/inventory" element={<InventoryPage />} />
-        <Route path="/monitoring" element={<MonitoringPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
-        <Route path="/ai-assistant" element={<AIAssistantPage />} />
+
+        <Route element={<PlusRoute />}>
+          <Route path="/monitoring" element={<MonitoringPage />} />
+          <Route path="/ai-assistant" element={<AIAssistantPage />} />
+        </Route>
+          <Route path="/subscription-management" element={<SubscriptionManagementPage />} />
       </Route>
     </Routes>
   )

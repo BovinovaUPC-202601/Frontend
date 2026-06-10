@@ -26,7 +26,7 @@ export function CampaignList() {
     else if (isFiltered) {
         if (filteredCampaigns.length === 0) {
             if (searchQuery.trim() !== "") {
-                showMessage = `No se encontraron campañas para “${searchQuery}”.`;
+                showMessage = `No se encontraron campañas para "${searchQuery}".`;
             } else {
                 showMessage = `No se encontraron campañas ${statusFilter ? "activas" : "inactivas"}.`;
             }
@@ -35,17 +35,17 @@ export function CampaignList() {
         }
     }
 
-
     return (
-        <div className="flex flex-wrap gap-15">
-            {
-                showMessage ? (
-                    <div className="text-neutral-500 text-center w-full py-10">{showMessage}</div>
-                ) : (
-                    listToShow.map((campaign) => <CampaignCard key={campaign.id} campaign={campaign} />)
-                )
-            }
-        </div>
-
+        <>
+            {showMessage ? (
+                <div className="rounded-[16px] bg-white shadow-md border border-[#E1E7DF] p-10">
+                    <p className="text-[#4F6354] text-base font-inter italic text-center">{showMessage}</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {listToShow.map((campaign) => <CampaignCard key={campaign.id} campaign={campaign} />)}
+                </div>
+            )}
+        </>
     );
 }

@@ -1,9 +1,9 @@
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
-import ThermostatIcon from "@mui/icons-material/Thermostat";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import {HeartPulse as MonitorHeartIcon} from "lucide-react";
+import {Thermometer as ThermostatIcon} from "lucide-react";
+import {TriangleAlert as WarningAmberIcon} from "lucide-react";
+import {CircleCheck as CheckCircleOutlineIcon} from "lucide-react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import type { HealthRecord } from "../model/health-record";
@@ -35,14 +35,14 @@ export function LatestRecordCard({ record }: Props) {
                     <div className={`flex items-center gap-2 ${tempOk ? 'text-neutral-700' : 'text-red-600 font-semibold'}`}>
                         <ThermostatIcon />
                         <span>{record.temperature.toFixed(1)} °C</span>
-                        {!tempOk && <WarningAmberIcon fontSize="small" className="text-red-500" />}
+                        {!tempOk && <WarningAmberIcon size={16} className="text-red-500" />}
                     </div>
 
                     {/* Heart rate */}
                     <div className={`flex items-center gap-2 ${hrOk ? 'text-neutral-700' : 'text-red-600 font-semibold'}`}>
                         <MonitorHeartIcon />
                         <span>{record.heartRate.toFixed(0)} BPM</span>
-                        {!hrOk && <WarningAmberIcon fontSize="small" className="text-red-500" />}
+                        {!hrOk && <WarningAmberIcon size={16} className="text-red-500" />}
                     </div>
                 </div>
 

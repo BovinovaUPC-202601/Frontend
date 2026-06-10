@@ -1,7 +1,7 @@
-import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
-import ThermostatIcon from "@mui/icons-material/Thermostat";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import {HeartPulse as MonitorHeartIcon} from "lucide-react";
+import {Thermometer as ThermostatIcon} from "lucide-react";
+import {TriangleAlert as WarningAmberIcon} from "lucide-react";
+import {CircleCheck as CheckCircleOutlineIcon} from "lucide-react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import type { HealthRecord } from "../model/health-record";
@@ -29,15 +29,15 @@ export function HistoryList({ records }: Props) {
                     >
                         <div className="flex gap-4 items-center">
                             {record.isAlert
-                                ? <WarningAmberIcon fontSize="small" className="text-red-500" />
-                                : <CheckCircleOutlineIcon fontSize="small" className="text-green-500" />
+                                ? <WarningAmberIcon size={16} className="text-red-500" />
+                                : <CheckCircleOutlineIcon size={16} className="text-green-500" />
                             }
                             <span className="flex items-center gap-1 text-neutral-700">
-                                <ThermostatIcon fontSize="small" />
+                                <ThermostatIcon size={16} />
                                 {record.temperature.toFixed(1)} °C
                             </span>
                             <span className="flex items-center gap-1 text-neutral-700">
-                                <MonitorHeartIcon fontSize="small" />
+                                <MonitorHeartIcon size={16} />
                                 {record.heartRate.toFixed(0)} BPM
                             </span>
                         </div>
