@@ -12,6 +12,7 @@ import { Category } from "../../inventory/model/Category";
 import { Product } from "../../inventory/model/Product";
 import { inventoryService } from "../../inventory/services/inventory-service";
 import { Animal } from "../../animals/model/animal";
+import { BovineBreed } from "../../animals/model/bovine-breed";
 import { animalsService } from "../../animals/services/animals-service";
 
 interface GlobalState {
@@ -22,7 +23,9 @@ interface GlobalState {
 
     // Animals
     animals: Animal[];
+    breeds: BovineBreed[];
     fetchAnimals: () => Promise<void>;
+    fetchBreeds: () => Promise<void>;
     addAnimal: (animal: Animal) => Promise<Animal | undefined>;
     deleteAnimal: (animal: Animal) => Promise<void>;
     updateAnimal: (animal: Animal) => Promise<void>;
@@ -78,6 +81,7 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
         await Promise.all([
             get().fetchInfo(),
             get().fetchAnimals(),
+            get().fetchBreeds(),
             get().fetchStables(),
             get().fetchCampaigns(),
             get().fetchStaff(),
@@ -88,6 +92,19 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
 
     // Animals
     animals: [],
+    breeds: [],
+    fetchBreeds: async () => {
+        try {
+            const res = await animalsService.getBreeds();
+            if (res.data) {
+                set((state) => {
+                    state.breeds = res.data;
+                });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    },
     fetchAnimals: async () => {
         try {
             const res = await animalsService.getAnimals();
