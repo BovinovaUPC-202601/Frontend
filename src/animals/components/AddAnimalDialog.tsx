@@ -18,7 +18,7 @@ const MAX_HR = 150;
 export function AddAnimalDialog() {
   const { isOpenModal, toggleModal, newAnimal, setNewAnimal, resetNewAnimal } =
     useAnimalStore();
-  const { addAnimal, stables } = useGlobalStore();
+  const { addAnimal, stables, breeds } = useGlobalStore();
   const isPlus = useAuthStore((s) => s.user.subscriptionPlan === "Plus");
   const { capacity, register, fetchCollars, availableNumbers } = useCollarStore();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -241,15 +241,28 @@ export function AddAnimalDialog() {
           {/* Raza */}
           <div className="flex flex-col gap-1.5">
             <label htmlFor="breed" className="text-sm font-medium text-[#0E1A12] font-inter">Raza</label>
-            <input
+            <select
               id="breed"
-              type="text"
-              autoComplete="off"
-              placeholder="Holstein"
-              className="focus:outline-none border border-[#E1E7DF] px-3 py-2.5 rounded-[10px] text-sm text-[#0E1A12] font-inter placeholder-[#7E8F82] transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
+              className="focus:outline-none border border-[#E1E7DF] px-3 py-2.5 rounded-[10px] text-sm text-[#0E1A12] font-inter transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
               value={newAnimal.breed || ""}
-              onChange={(e) => setNewAnimal({ breed: e.target.value })}
-            />
+              onChange={(e) => {
+                const selectedBreed = breeds.find((b) => b.name === e.target.value);
+                setNewAnimal({
+                  breed: e.target.value,
+                  minTemperature: selectedBreed?.minTemperature ?? newAnimal.minTemperature,
+                  maxTemperature: selectedBreed?.maxTemperature ?? newAnimal.maxTemperature,
+                  minHeartRate: selectedBreed?.minHeartRate ?? newAnimal.minHeartRate,
+                  maxHeartRate: selectedBreed?.maxHeartRate ?? newAnimal.maxHeartRate,
+                });
+              }}
+            >
+              <option value="">Seleccionar raza</option>
+              {breeds.map((breed) => (
+                <option key={breed.id} value={breed.name}>
+                  {breed.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Establo */}

@@ -1,8 +1,13 @@
 import http from "../../shared/services/http";
 import type { Animal } from "../model/animal";
+import type { BovineBreed } from "../model/bovine-breed";
 
 export class AnimalsService {
   private endpoint = import.meta.env.VITE_API_BASE_URL + "/bovines";
+
+  async getBreeds() {
+    return await http.get<BovineBreed[]>(this.endpoint + "/breeds");
+  }
 
   async getAnimals() {
     return await http.get<Animal[]>(this.endpoint);

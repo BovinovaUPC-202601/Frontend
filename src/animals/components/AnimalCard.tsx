@@ -20,7 +20,7 @@ interface AnimalCardProps {
 }
 
 export function AnimalCard({ animal }: AnimalCardProps) {
-  const { deleteAnimal, updateAnimal, stables } = useGlobalStore();
+  const { deleteAnimal, updateAnimal, stables, breeds } = useGlobalStore();
   const isPlus = useAuthStore((s) => s.user.subscriptionPlan === "Plus");
 
   const [isEditing, setIsEditing] = useState(false);
@@ -166,12 +166,27 @@ export function AnimalCard({ animal }: AnimalCardProps) {
               <label className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block mb-0.5">
                 Raza
               </label>
-              <input
+              <select
                 className="text-sm text-[#0E1A12] font-inter focus:outline-none bg-[#F4F8F2] border border-[#E1E7DF] px-2.5 py-1.5 rounded-[8px] w-full transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
                 value={editedBreed}
-                onChange={(e) => setEditedBreed(e.target.value)}
-                placeholder="Holstein"
-              />
+                onChange={(e) => {
+                  const selectedBreed = breeds.find((b) => b.name === e.target.value);
+                  setEditedBreed(e.target.value);
+                  if (selectedBreed) {
+                    setEditedMinTemp(selectedBreed.minTemperature);
+                    setEditedMaxTemp(selectedBreed.maxTemperature);
+                    setEditedMinHeart(selectedBreed.minHeartRate);
+                    setEditedMaxHeart(selectedBreed.maxHeartRate);
+                  }
+                }}
+              >
+                <option value="">Seleccionar raza</option>
+                {breeds.map((breed) => (
+                  <option key={breed.id} value={breed.name}>
+                    {breed.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="col-span-2">
               <label className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block mb-0.5">
