@@ -12,7 +12,7 @@ import { Category } from "../../inventory/model/Category";
 import { Product } from "../../inventory/model/Product";
 import { inventoryService } from "../../inventory/services/inventory-service";
 import { Animal } from "../../animals/model/animal";
-import { BovineBreed } from "../../animals/model/bovine-breed";
+import type { BovineBreed } from "../../animals/model/bovine-breed";
 import { animalsService } from "../../animals/services/animals-service";
 
 interface GlobalState {
