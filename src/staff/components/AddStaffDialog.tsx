@@ -11,11 +11,23 @@ import { CircleCheck as CheckCircleIcon } from "lucide-react";
 
 type DialogTab = "new-user" | "existing-user";
 
-function extractApiErrorMessage(error: any, fallback: string): string {
-    const data = error?.response?.data;
+type ApiError = {
+    response?: {
+        data?: unknown;
+        status?: number;
+    };
+};
+
+function extractApiErrorMessage(error: unknown, fallback: string): string {
+    const data = (error as ApiError)?.response?.data;
     if (data) {
         if (typeof data === "string" && data.trim()) return data;
-        if (typeof data.message === "string" && data.message.trim()) return data.message;
+        if (
+            typeof data === "object" &&
+            "message" in data &&
+            typeof data.message === "string" &&
+            data.message.trim()
+        ) return data.message;
     }
     return fallback;
 }
@@ -97,7 +109,7 @@ export function AddStaffDialog() {
                 accessLevel: accessLevel as StaffAccessLevel,
             });
             handleClose();
-        } catch (error: any) {
+        } catch (error: unknown) {
             setValidationError(extractApiErrorMessage(error, "No se pudo crear el usuario."));
         } finally {
             setIsSubmitting(false);
@@ -115,8 +127,8 @@ export function AddStaffDialog() {
         try {
             const res = await staffService.searchUserByEmail(searchEmail.trim());
             setFoundUser(res.data);
-        } catch (error: any) {
-            const message = error?.response?.status === 404
+        } catch (error: unknown) {
+            const message = (error as ApiError)?.response?.status === 404
                 ? "No existe un usuario con ese email."
                 : extractApiErrorMessage(error, "No se pudo buscar el usuario.");
             setValidationError(message);
@@ -138,7 +150,7 @@ export function AddStaffDialog() {
                 accessLevel: existingAccessLevel as StaffAccessLevel,
             });
             handleClose();
-        } catch (error: any) {
+        } catch (error: unknown) {
             setValidationError(extractApiErrorMessage(error, "No se pudo dar acceso al usuario."));
         } finally {
             setIsSubmitting(false);

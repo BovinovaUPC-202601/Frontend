@@ -3,6 +3,10 @@ import { immer } from "zustand/middleware/immer";
 import { subscriptionService } from "../services/subscription-service";
 import { useAuthStore } from "../../auth/store/auth-store";
 
+type ErrorWithMessage = {
+    message?: string;
+};
+
 interface SubscriptionState {
     loading: boolean;
     error: string | null;
@@ -32,10 +36,10 @@ export const useSubscriptionStore = create(
                     state.error = null;
                 });
 
-            } catch (err: any) {
+            } catch (err: unknown) {
                 set(state => {
                     state.loading = false;
-                    state.error = err.message;
+                    state.error = (err as ErrorWithMessage).message ?? "No se pudo actualizar la suscripciÃ³n.";
                 });
             }
         },

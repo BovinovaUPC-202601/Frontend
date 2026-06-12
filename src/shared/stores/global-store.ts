@@ -20,6 +20,10 @@ import { Animal } from "../../animals/model/animal";
 import type { BovineBreed } from "../../animals/model/bovine-breed";
 import { animalsService } from "../../animals/services/animals-service";
 
+type StaffApiResponse = Staff & {
+    employeeStatus?: Staff["status"];
+};
+
 interface GlobalState {
     // Dashboard
     info: Info;
@@ -274,7 +278,7 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
         try {
             const res = await staffService.getStaff();
             if (res.data) {
-                const mappedStaff: Staff[] = res.data.map((s: any) => ({
+                const mappedStaff: Staff[] = (res.data as StaffApiResponse[]).map((s) => ({
                     ...s,
                     status: s.employeeStatus
                 }));

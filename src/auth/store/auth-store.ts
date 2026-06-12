@@ -4,6 +4,12 @@ import { User } from "../model/user";
 import { authService } from "../services/auth-service";
 import { useGlobalStore } from "../../shared/stores/global-store";
 
+type ApiError = {
+    response?: {
+        data?: unknown;
+    };
+};
+
 function loadUser(): User {
     try {
         const raw = localStorage.getItem("user");
@@ -35,11 +41,16 @@ function clearUser() {
 // Pulls the most useful message out of an axios error. Prefers the message the
 // API sent back ({ message } or a plain string body); falls back to a friendly
 // default so the user never sees a raw "Network Error".
-function extractApiErrorMessage(error: any, fallback: string): string {
-    const data = error?.response?.data;
+function extractApiErrorMessage(error: unknown, fallback: string): string {
+    const data = (error as ApiError)?.response?.data;
     if (data) {
         if (typeof data === "string" && data.trim()) return data;
-        if (typeof data.message === "string" && data.message.trim()) return data.message;
+        if (
+            typeof data === "object" &&
+            "message" in data &&
+            typeof data.message === "string" &&
+            data.message.trim()
+        ) return data.message;
     }
     return fallback;
 }
@@ -96,7 +107,7 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
             await get().fetchPermissions();
             await useGlobalStore.getState().loadAppData();
             return true;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Login failed:", error);
             set(state => {
                 state.error = extractApiErrorMessage(
@@ -121,7 +132,7 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
             await get().fetchPermissions();
             await useGlobalStore.getState().loadAppData();
             return true;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Registration failed:", error);
             set(state => {
                 state.error = extractApiErrorMessage(
@@ -157,7 +168,7 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
                 if (profile.isStaff) state.planLoaded = true;
             });
             saveUser(get().user);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Failed to load permissions:", error);
             // Most restrictive defaults (e.g. inactive staff gets 403 here):
             // nothing is editable and gated pages stay locked.
