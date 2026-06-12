@@ -13,7 +13,19 @@ function loadUser(): User {
 }
 
 function saveUser(user: User) {
-    localStorage.setItem("user", JSON.stringify({ username: user.username, email: user.email }));
+    localStorage.setItem("user", JSON.stringify({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        subscriptionPlan: user.subscriptionPlan,
+        isStaff: user.isStaff,
+        effectiveUserId: user.effectiveUserId,
+        accessLevel: user.accessLevel,
+        canRead: user.canRead,
+        canEdit: user.canEdit,
+        canManageStaff: user.canManageStaff,
+        canManageSubscription: user.canManageSubscription,
+    }));
 }
 
 function clearUser() {
@@ -37,6 +49,7 @@ interface AuthState {
     error: string | null;
     isLoading: boolean;
     planLoaded: boolean;
+    permissionsLoaded: boolean;
     setUser: (user: Partial<User>) => void;
     setError: (error: string | null) => void;
     logout: () => void;
@@ -44,6 +57,12 @@ interface AuthState {
     login: () => Promise<boolean>;
     register: (confirmPassword: string) => Promise<boolean>;
 
+    /**
+     * Loads the real permissions (isStaff, accessLevel, canEdit, ...) from the
+     * backend profile. The values are never invented locally so access changes
+     * apply on the next load even with an old token.
+     */
+    fetchPermissions: () => Promise<void>;
 
     setSubscription: (plan: string) => void;
 }
@@ -53,6 +72,7 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
     error: null,
     isLoading: false,
     planLoaded: false,
+    permissionsLoaded: false,
     setUser: (user: Partial<User>) => set(state => { state.user = { ...state.user, ...user }; }),
     setError: (error: string | null) => set(state => { state.error = error; }),
     logout: () => {
@@ -63,6 +83,7 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
             state.error = null;
             state.isLoading = false;
             state.planLoaded = false;
+            state.permissionsLoaded = false;
         });
     },
     login: async () => {
@@ -72,6 +93,7 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
             const res = await authService.login(user);
             if (res.data.token) localStorage.setItem("token", res.data.token);
             saveUser(user);
+            await get().fetchPermissions();
             await useGlobalStore.getState().loadAppData();
             return true;
         } catch (error: any) {
@@ -96,6 +118,7 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
             const res = await authService.register(user);
             if (res.data.token) localStorage.setItem("token", res.data.token);
             saveUser(user);
+            await get().fetchPermissions();
             await useGlobalStore.getState().loadAppData();
             return true;
         } catch (error: any) {
@@ -107,6 +130,50 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
             return false;
         } finally {
             set(state => { state.isLoading = false; });
+        }
+    },
+    fetchPermissions: async () => {
+        try {
+            const res = await authService.getProfile();
+            const profile = res.data;
+            set(state => {
+                state.user = {
+                    ...state.user,
+                    id: profile.id,
+                    username: profile.name ?? state.user.username,
+                    email: profile.email ?? state.user.email,
+                    subscriptionPlan: profile.subscriptionPlan,
+                    isStaff: profile.isStaff,
+                    effectiveUserId: profile.effectiveUserId,
+                    accessLevel: profile.accessLevel,
+                    canRead: profile.canRead,
+                    canEdit: profile.canEdit,
+                    canManageStaff: profile.canManageStaff,
+                    canManageSubscription: profile.canManageSubscription,
+                };
+                state.permissionsLoaded = true;
+                // For staff the backend reports the OWNER's plan, so Plus features
+                // stay unlocked when the rancher is Plus. PlusRoute relies on this.
+                if (profile.isStaff) state.planLoaded = true;
+            });
+            saveUser(get().user);
+        } catch (error: any) {
+            console.error("Failed to load permissions:", error);
+            // Most restrictive defaults (e.g. inactive staff gets 403 here):
+            // nothing is editable and gated pages stay locked.
+            set(state => {
+                state.user = {
+                    ...state.user,
+                    isStaff: true,
+                    canRead: false,
+                    canEdit: false,
+                    canManageStaff: false,
+                    canManageSubscription: false,
+                };
+                state.permissionsLoaded = true;
+                state.error = extractApiErrorMessage(
+                    error, "No se pudieron cargar los permisos.");
+            });
         }
     },
     setSubscription: (plan: string) =>

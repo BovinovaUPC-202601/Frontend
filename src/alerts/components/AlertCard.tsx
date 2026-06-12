@@ -6,6 +6,8 @@ import {TriangleAlert as WarningAmberIcon} from "lucide-react";
 import {CircleAlert as ErrorIcon} from "lucide-react";
 import {CircleCheck as CheckCircleOutlineIcon} from "lucide-react";
 import dayjs from "dayjs";
+import { useAuthStore } from "../../auth/store/auth-store";
+import { canEdit } from "../../shared/utils/access-control";
 import type { Alert } from "../model/alert";
 
 interface Props {
@@ -14,6 +16,7 @@ interface Props {
 }
 
 export function AlertCard({ alert, onMarkAsRead }: Props) {
+    const editable = useAuthStore((s) => canEdit(s.user));
     const borderColor = alert.isRed
         ? 'border-red-400'
         : alert.isYellow
@@ -61,7 +64,7 @@ export function AlertCard({ alert, onMarkAsRead }: Props) {
                         </span>
                     </div>
 
-                    {alert.isUnread && (
+                    {alert.isUnread && editable && (
                         <Button
                             size="small"
                             variant="outlined"

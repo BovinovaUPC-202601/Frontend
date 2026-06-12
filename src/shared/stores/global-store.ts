@@ -4,8 +4,13 @@ import { Info } from "../../dashboard/model/info";
 import { dashboardService } from "../../dashboard/services/dashboard-service";
 import { Stable } from "../../stables/model/stable";
 import { stableService } from "../../stables/services/stable-service";
-import { StaffStatus, type Staff } from "../../staff/model/staff";
-import { staffService } from "../../staff/services/staff-service";
+import { type Staff } from "../../staff/model/staff";
+import {
+    staffService,
+    type CreateStaffWithNewUserPayload,
+    type GrantAccessToExistingUserPayload,
+    type UpdateStaffAccessPayload,
+} from "../../staff/services/staff-service";
 import { Campaign } from "../../campaigns/model/campaign";
 import { campaignService } from "../../campaigns/services/campaigns-service";
 import { Category } from "../../inventory/model/Category";
@@ -47,9 +52,10 @@ interface GlobalState {
     // Staff
     staff: Staff[];
     fetchStaff: () => Promise<void>;
-    addStaff: (staff: Staff) => Promise<void>;
+    addStaffWithNewUser: (payload: CreateStaffWithNewUserPayload) => Promise<void>;
+    grantStaffAccessToExistingUser: (payload: GrantAccessToExistingUserPayload) => Promise<void>;
+    updateStaffAccess: (staff: Staff, payload: UpdateStaffAccessPayload) => Promise<void>;
     deleteStaff: (staff: Staff) => Promise<void>;
-    updateStaff: (staff: Staff) => Promise<void>;
 
     // Inventory
     categories: Category[];
@@ -278,40 +284,42 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
             console.error(error);
         }
     },
-    addStaff: async (staff) => {
-        try {
-            const newStaff: Staff = { ...staff, status: StaffStatus.Activo };
-            const res = await staffService.addStaff(newStaff);
-            if (res.data) {
-                const mappedStaff: Staff = { ...res.data, status: res.data.employeeStatus };
-                set((state) => {
-                    state.staff.push(mappedStaff);
-                });
-            }
-        } catch (error) {
-            console.error(error);
+    // The add/update staff flows rethrow so the dialog can show the API message
+    // (duplicate email, user not found, etc.) instead of failing silently.
+    addStaffWithNewUser: async (payload) => {
+        const res = await staffService.createStaffWithNewUser(payload);
+        if (res.data) {
+            const mappedStaff: Staff = { ...res.data, status: res.data.employeeStatus };
+            set((state) => {
+                state.staff.push(mappedStaff);
+            });
+        }
+    },
+    grantStaffAccessToExistingUser: async (payload) => {
+        const res = await staffService.grantAccessToExistingUser(payload);
+        if (res.data) {
+            const mappedStaff: Staff = { ...res.data, status: res.data.employeeStatus };
+            set((state) => {
+                state.staff.push(mappedStaff);
+            });
+        }
+    },
+    updateStaffAccess: async (staff, payload) => {
+        const res = await staffService.updateStaffAccess(staff.id!, payload);
+        if (res.data) {
+            const mappedStaff: Staff = { ...res.data, status: res.data.employeeStatus };
+            set((state) => {
+                const index = state.staff.findIndex((s) => s.id === staff.id);
+                if (index !== -1) state.staff[index] = mappedStaff;
+            });
         }
     },
     deleteStaff: async (staff) => {
         try {
             const res = await staffService.deleteStaff(staff);
-            if (res.status === 200) {
+            if (res.status === 204 || res.status === 200) {
                 set((state) => {
                     state.staff = state.staff.filter((s) => s.id != staff.id);
-                });
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    },
-    updateStaff: async (staff) => {
-        try {
-            const res = await staffService.updateStaff(staff);
-            if (res.data) {
-                const mappedStaff: Staff = { ...res.data, status: res.data.employeeStatus };
-                set((state) => {
-                    const index = state.staff.findIndex((s) => s.id === staff.id);
-                    if (index !== -1) state.staff[index] = mappedStaff;
                 });
             }
         } catch (error) {
