@@ -10,7 +10,7 @@ import { useAlertsStore } from "../stores/alerts-store";
 import { useGlobalStore } from "../../shared/stores/global-store";
 import type { Alert } from "../model/alert";
 
-const POLL_INTERVAL_MS = 15_000;
+const POLL_INTERVAL_MS = 5_000;
 const AUTO_DISMISS_MS = 8_000;
 
 function severityOf(alert: Alert): "error" | "warning" | "success" {

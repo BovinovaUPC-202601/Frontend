@@ -139,12 +139,15 @@ export function MainLayout() {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [sidebarExpanded, setSidebarExpanded] = useState(true);
     const fetchCurrentPlan = useSubscriptionStore(state => state.fetchCurrentPlan);
+    const loadAppData = useGlobalStore(state => state.loadAppData);
 
-    // Load the real plan from the backend on mount so gating survives refresh
-    // (the auth store resets on reload while the token persists in localStorage).
+    // Rehydrate plan + global app data (breeds, animals, stables, …) on mount so
+    // everything survives a page refresh — the auth store resets on reload while
+    // the token persists in localStorage, and loadAppData otherwise only runs at login.
     useEffect(() => {
         fetchCurrentPlan();
-    }, [fetchCurrentPlan]);
+        loadAppData();
+    }, [fetchCurrentPlan, loadAppData]);
 
     return (
         <div className="min-h-screen bg-[#D8E8DD]">
