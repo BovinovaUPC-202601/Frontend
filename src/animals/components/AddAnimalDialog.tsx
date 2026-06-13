@@ -355,12 +355,12 @@ export function AddAnimalDialog() {
                   Collar IoT (opcional)
                 </label>
                 <span className="text-[11px] text-[#7E8F82] font-inter">
-                  {capacity.remaining}/{capacity.allowance} disponibles
+                  {capacity.available}/{capacity.allowance} disponibles
                 </span>
               </div>
               <select
                 id="deviceId"
-                disabled={capacity.remaining <= 0}
+                disabled={capacity.available <= 0}
                 className="focus:outline-none border border-[#E1E7DF] px-3 py-2.5 rounded-[10px] text-sm text-[#0E1A12] font-inter transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA] disabled:bg-[#F4F8F2] disabled:text-[#7E8F82]"
                 value={selectedCollar}
                 onChange={(e) =>
@@ -374,7 +374,7 @@ export function AddAnimalDialog() {
                   </option>
                 ))}
               </select>
-              {capacity.remaining <= 0 && (
+              {capacity.available <= 0 && (
                 <span className="text-[11px] text-[#7E8F82] font-inter italic">
                   Sin collares disponibles. Solicitá uno adicional en Suscripción.
                 </span>

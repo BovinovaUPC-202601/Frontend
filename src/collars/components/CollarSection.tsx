@@ -9,8 +9,10 @@ interface CollarSectionProps {
 // Per-bovine collar management used inside the bovine edit form (Plus only).
 // "Cambiar" replaces the physical device on this bovine (remove old + register new).
 export function CollarSection({ bovineId }: CollarSectionProps) {
-    const { capacity, register, remove, fetchCollars, collarForBovine, availableNumbers, loading, error } =
-        useCollarStore();
+    const {
+        capacity, register, remove, fetchCollars, collarForBovine, availableNumbers,
+        justRegisteredDeviceId, loading, error,
+    } = useCollarStore();
     const collar = collarForBovine(bovineId);
     const available = availableNumbers();
 
@@ -48,14 +50,40 @@ export function CollarSection({ bovineId }: CollarSectionProps) {
 
     const noCapacity = !collar && available.length === 0;
 
+    // Whether this bovine's collar was just registered (used only to highlight the
+    // device id box). The id itself stays visible+copyable as long as a collar is
+    // assigned, so the rancher can flash it any time, not only right after registering.
+    const justRegistered = !!justRegisteredDeviceId && collar?.deviceId === justRegisteredDeviceId;
+
     return (
         <div className="flex flex-col gap-2 bg-neutral-50 border border-neutral-200 rounded-sm p-3">
             <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold text-neutral-700">Collar IoT</span>
                 <span className="text-xs text-neutral-500">
-                    {capacity.remaining}/{capacity.allowance} disponibles
+                    {capacity.available}/{capacity.allowance} disponibles
                 </span>
             </div>
+
+            {collar && !changing && (
+                <div className={`flex flex-col gap-1 rounded-sm p-2 border ${
+                    justRegistered ? "bg-brand-default/5 border-brand-default/30" : "bg-white border-neutral-200"
+                }`}>
+                    <span className={`text-xs font-semibold ${justRegistered ? "text-brand-dark" : "text-neutral-600"}`}>
+                        {justRegistered ? "✅ Collar registrado. " : ""}Copiá este ID a tu ESP32 (constante DEVICE_ID):
+                    </span>
+                    <div className="flex items-center gap-2">
+                        <code className="flex-1 text-sm font-mono bg-white border border-neutral-300 rounded-sm px-2 py-1 select-all">
+                            {collar.deviceId}
+                        </code>
+                        <button
+                            onClick={() => navigator.clipboard?.writeText(collar.deviceId)}
+                            className="text-xs px-2 py-1 rounded-sm border border-neutral-300 text-neutral-600 hover:bg-neutral-200"
+                        >
+                            Copiar
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {collar && !changing ? (
                 <div className="flex items-center justify-between gap-2">
