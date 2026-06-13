@@ -4,6 +4,7 @@ import { useGlobalStore } from "../../shared/stores/global-store";
 import { useMonitoringStore } from "../stores/monitoring-store";
 import { useCollarStore } from "../../collars/stores/collar-store";
 import { LatestRecordCard } from "../components/LatestRecordCard";
+import { LiveTelemetryChart } from "../components/LiveTelemetryChart";
 import { HistoryList } from "../components/HistoryList";
 
 export function MonitoringPage() {
@@ -74,6 +75,11 @@ export function MonitoringPage() {
                 <div className="flex justify-center mt-4">
                     <CircularProgress size={32} />
                 </div>
+            )}
+
+            {/* Live telemetry chart */}
+            {!loading && selectedBovineId && latestRecord && (
+                <LiveTelemetryChart records={records} />
             )}
 
             {/* Latest record */}
