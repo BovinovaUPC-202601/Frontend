@@ -10,10 +10,11 @@ import type { Alert } from "../model/alert";
 
 interface Props {
     alert: Alert;
+    bovineName?: string;
     onMarkAsRead: (alertId: number) => void;
 }
 
-export function AlertCard({ alert, onMarkAsRead }: Props) {
+export function AlertCard({ alert, bovineName, onMarkAsRead }: Props) {
     const borderColor = alert.isRed
         ? 'border-red-400'
         : alert.isYellow
@@ -57,7 +58,7 @@ export function AlertCard({ alert, onMarkAsRead }: Props) {
                         </div>
 
                         <span className="text-xs text-neutral-400">
-                            Bovino ID: {alert.bovineId} · {dayjs(alert.createdAt).format('DD/MM/YYYY HH:mm')}
+                            {bovineName ? `${bovineName} (ID: ${alert.bovineId})` : `Bovino ID: ${alert.bovineId}`} · {dayjs(alert.createdAt).format('DD/MM/YYYY HH:mm')}
                         </span>
                     </div>
 
