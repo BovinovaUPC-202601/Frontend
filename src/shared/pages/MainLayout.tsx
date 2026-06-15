@@ -19,20 +19,28 @@ import { useAuthStore } from "../../auth/store/auth-store";
 import { useGlobalStore } from "../stores/global-store";
 import { useSubscriptionStore } from "../../subscription/stores/subscription-store";
 import { AlertToaster } from "../../alerts/components/AlertToaster";
+import { canManageStaff, canManageSubscription } from "../utils/access-control";
 
-type NavItem = { to: string; icon: ReactNode; label: string; plusOnly?: boolean };
+type NavItem = {
+    to: string;
+    icon: ReactNode;
+    label: string;
+    plusOnly?: boolean;
+    requiresStaffManagement?: boolean;
+    requiresSubscriptionManagement?: boolean;
+};
 
 const navItems: NavItem[] = [
     { to: "/dashboard", icon: <DashboardIcon />, label: "Panel" },
     { to: "/animals", icon: <PetsIcon />, label: "Ganado" },
     { to: "/stables", icon: <CabinIcon />, label: "Establos" },
     { to: "/campaigns", icon: <CampaignIcon />, label: "Campañas" },
-    { to: "/staff", icon: <PeopleAltIcon />, label: "Personal" },
+    { to: "/staff", icon: <PeopleAltIcon />, label: "Personal", requiresStaffManagement: true },
     { to: "/inventory", icon: <InventoryIcon />, label: "Inventario" },
     { to: "/monitoring", icon: <MonitorHeartIcon />, label: "Monitoreo", plusOnly: true },
     { to: "/alerts", icon: <NotificationsIcon />, label: "Alertas" },
     { to: "/ai-assistant", icon: <AutoAwesomeIcon />, label: "Asistente IA", plusOnly: true },
-    { to: "/subscription-management", icon: <AutoAwesomeIcon />, label: "Suscripción" },
+    { to: "/subscription-management", icon: <AutoAwesomeIcon />, label: "Suscripción", requiresSubscriptionManagement: true },
 ];
 
 function SidebarContent({ expanded, onToggle, onNavigate }: { expanded: boolean; onToggle: () => void; onNavigate: () => void }) {
@@ -96,7 +104,11 @@ function SidebarContent({ expanded, onToggle, onNavigate }: { expanded: boolean;
             </div>
 
             <nav className={`flex-1 flex flex-col gap-0.5 transition-all duration-300 ${expanded ? 'p-3 mt-2' : 'p-2 mt-3 items-center'}`}>
-                {navItems.filter(item => !item.plusOnly || isPlus).map(item => (
+                {navItems
+                    .filter(item => !item.plusOnly || isPlus)
+                    .filter(item => !item.requiresStaffManagement || canManageStaff(user))
+                    .filter(item => !item.requiresSubscriptionManagement || canManageSubscription(user))
+                    .map(item => (
                     <NavLink
                         key={item.to}
                         to={item.to}
@@ -140,14 +152,21 @@ export function MainLayout() {
     const [sidebarExpanded, setSidebarExpanded] = useState(true);
     const fetchCurrentPlan = useSubscriptionStore(state => state.fetchCurrentPlan);
     const loadAppData = useGlobalStore(state => state.loadAppData);
+    const fetchPermissions = useAuthStore(state => state.fetchPermissions);
 
-    // Rehydrate plan + global app data (breeds, animals, stables, …) on mount so
-    // everything survives a page refresh — the auth store resets on reload while
-    // the token persists in localStorage, and loadAppData otherwise only runs at login.
+    // Rehydrate permissions + plan + global app data (breeds, animals, stables, …)
+    // from the backend on mount so everything survives a page refresh — the auth
+    // store resets on reload while the token persists in localStorage, and
+    // loadAppData otherwise only runs at login. Staff get the OWNER's plan from the
+    // profile (the subscription endpoint is owner-only and would answer 403), so
+    // fetchCurrentPlan runs only for owners.
     useEffect(() => {
-        fetchCurrentPlan();
-        loadAppData();
-    }, [fetchCurrentPlan, loadAppData]);
+        (async () => {
+            await fetchPermissions();
+            loadAppData();
+            if (!useAuthStore.getState().user.isStaff) fetchCurrentPlan();
+        })();
+    }, [fetchPermissions, fetchCurrentPlan, loadAppData]);
 
     return (
         <div className="min-h-screen bg-[#D8E8DD]">

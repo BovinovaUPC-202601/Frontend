@@ -24,8 +24,19 @@ interface CollarState {
     availableNumbers: () => number[];
 }
 
-const extractError = (err: any) =>
-    err?.response?.data ?? err?.message ?? "Error inesperado";
+type ApiError = {
+    response?: {
+        data?: unknown;
+    };
+    message?: string;
+};
+
+const extractError = (err: unknown): string => {
+    const apiError = err as ApiError;
+    const data = apiError.response?.data;
+    if (typeof data === "string" && data.trim()) return data;
+    return apiError.message ?? "Error inesperado";
+};
 
 export const useCollarStore = create(
     immer<CollarState>((set, get) => ({
@@ -65,7 +76,7 @@ export const useCollarStore = create(
                 await get().fetchCollars();
                 set(state => { state.justRegisteredDeviceId = res.data.deviceId; });
                 return true;
-            } catch (err: any) {
+            } catch (err: unknown) {
                 set(state => { state.loading = false; state.error = extractError(err); });
                 return false;
             }
@@ -77,7 +88,7 @@ export const useCollarStore = create(
                 await collarService.reassign(collarId, bovineId);
                 await get().fetchCollars();
                 return true;
-            } catch (err: any) {
+            } catch (err: unknown) {
                 set(state => { state.loading = false; state.error = extractError(err); });
                 return false;
             }
@@ -89,7 +100,7 @@ export const useCollarStore = create(
                 await collarService.remove(collarId);
                 await get().fetchCollars();
                 return true;
-            } catch (err: any) {
+            } catch (err: unknown) {
                 set(state => { state.loading = false; state.error = extractError(err); });
                 return false;
             }

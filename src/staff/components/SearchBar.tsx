@@ -14,7 +14,7 @@ export function SearchBar() {
                     <input
                         className="focus:outline-none bg-white px-4 py-2.5 rounded-[12px] border border-[#E1E7DF] flex-1 font-inter text-sm text-[#0E1A12] placeholder-[#7E8F82] transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
                         type="text"
-                        placeholder="Buscar empleado por nombre"
+                        placeholder="Buscar empleado por nombre o email"
                         value={searchQuery}
                         onChange={(e) => { setSearchQuery(e.target.value); filterStaff(staff); }}
                     />

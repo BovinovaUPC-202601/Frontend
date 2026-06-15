@@ -34,7 +34,7 @@ export function CampaignCalendar() {
 
     const getCampaignsForDay = (day: number) => {
         const date = startOfMonth.date(day).startOf('day');
-        return campaigns.filter((c: any) => {
+        return campaigns.filter((c) => {
             const start = dayInTz(c.startDate).startOf('day');
             const end = dayInTz(c.endDate).startOf('day');
             return (date.isSame(start) || date.isAfter(start)) && (date.isSame(end) || date.isBefore(end));
@@ -110,7 +110,7 @@ export function CampaignCalendar() {
                                         key={c.id}
                                         className="text-[10px] leading-tight font-medium text-white font-inter px-1.5 py-0.5 rounded-[4px] truncate"
                                         style={{
-                                            backgroundColor: (c as any).isActive ? '#10A065' : dayjs(c.startDate).isAfter(dayjs()) ? '#3A82B0' : '#7E8F82'
+                                            backgroundColor: c.isActive ? '#10A065' : dayjs(c.startDate).isAfter(dayjs()) ? '#3A82B0' : '#7E8F82'
                                         }}
                                         title={c.name}
                                     >
