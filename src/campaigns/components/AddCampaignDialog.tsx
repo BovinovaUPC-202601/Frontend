@@ -36,11 +36,18 @@ export function AddCampaignDialog() {
             return;
         }
 
+        if (newCampaign.endDate && dayjs(newCampaign.endDate).isBefore(dayjs(), "day")) {
+            setValidationError("La fecha de fin debe ser futura o igual al día actual.");
+            return;
+        }
+
         setValidationError("");
         setIsSubmitting(true);
         try {
             await addCampaign(newCampaign);
             handleClose();
+        } catch (error: any) {
+            setValidationError(error.message || "Error al crear la campaña.");
         } finally {
             setIsSubmitting(false);
         }

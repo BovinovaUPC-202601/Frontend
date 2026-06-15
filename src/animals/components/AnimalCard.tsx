@@ -34,21 +34,49 @@ export function AnimalCard({ animal }: AnimalCardProps) {
   const [editedMaxTemp, setEditedMaxTemp] = useState(animal.maxTemperature);
   const [editedMinHeart, setEditedMinHeart] = useState(animal.minHeartRate);
   const [editedMaxHeart, setEditedMaxHeart] = useState(animal.maxHeartRate);
+  const [editError, setEditError] = useState("");
 
   const handleSave = async () => {
-    await updateAnimal({
-      ...animal,
-      name: editedName,
-      gender: editedGender,
-      birthDate: editedBirthDate,
-      breed: editedBreed,
-      stableId: editedStableId,
-      minTemperature: editedMinTemp,
-      maxTemperature: editedMaxTemp,
-      minHeartRate: editedMinHeart,
-      maxHeartRate: editedMaxHeart,
-    });
-    setIsEditing(false);
+    setEditError("");
+
+    if (dayjs(editedBirthDate).isAfter(dayjs())) {
+      setEditError("La fecha de nacimiento no puede ser futura.");
+      return;
+    }
+
+    // Check stable capacity if stable changed
+    if (editedStableId !== animal.stableId) {
+      const selectedStable = stables.find((s) => s.id === editedStableId);
+      if (selectedStable && selectedStable.limit !== undefined) {
+        const animalsInStable = useGlobalStore.getState().animals.filter(
+          (a) => a.stableId === editedStableId && a.id !== animal.id,
+        ).length;
+        if (animalsInStable >= selectedStable.limit) {
+          setEditError(
+            "El establo seleccionado está lleno. Elegí otro o aumentá su capacidad.",
+          );
+          return;
+        }
+      }
+    }
+
+    try {
+      await updateAnimal({
+        ...animal,
+        name: editedName,
+        gender: editedGender,
+        birthDate: editedBirthDate,
+        breed: editedBreed,
+        stableId: editedStableId,
+        minTemperature: editedMinTemp,
+        maxTemperature: editedMaxTemp,
+        minHeartRate: editedMinHeart,
+        maxHeartRate: editedMaxHeart,
+      });
+      setIsEditing(false);
+    } catch (error: any) {
+      setEditError(error.message || "Error al actualizar el animal.");
+    }
   };
 
   const handleCancel = () => {
@@ -251,6 +279,12 @@ export function AnimalCard({ animal }: AnimalCardProps) {
               />
             </div>
           </div>
+
+          {editError && (
+            <div className="text-[#D04A3A] text-xs text-center font-medium font-inter mt-2">
+              {editError}
+            </div>
+          )}
 
           {isPlus && <CollarSection bovineId={animal.id} />}
         </div>

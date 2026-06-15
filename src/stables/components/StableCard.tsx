@@ -23,6 +23,7 @@ export function StableCard({ stable }: StableCardProps) {
     const [showAnimalsModal, setShowAnimalsModal] = useState(false);
     const [editedName, setEditedName] = useState(stable.name);
     const [editedLimit, setEditedLimit] = useState(stable.limit);
+    const [editError, setEditError] = useState("");
 
     const animalsInStable = animals.filter(a => a.stableId === stable.id);
     const currentCount = animalsInStable.length;
@@ -32,8 +33,21 @@ export function StableCard({ stable }: StableCardProps) {
     const barBg = percent >= 90 ? "bg-[#FFD9D2]" : percent >= 70 ? "bg-[#FFE9C8]" : "bg-[#C8F0DA]";
 
     const handleSave = async () => {
-        await updateStable({ ...stable, name: editedName, limit: editedLimit });
-        setIsEditing(false);
+        setEditError("");
+        if (editedLimit !== undefined && editedLimit < currentCount) {
+            setEditError(
+                `No se puede reducir la capacidad a ${editedLimit} porque el establo tiene ${currentCount} animales.`
+            );
+            return;
+        }
+        try {
+            const updateData = { ...stable, name: editedName };
+            if (editedLimit !== undefined) updateData.limit = editedLimit;
+            await updateStable(updateData);
+            setIsEditing(false);
+        } catch (error: any) {
+            setEditError(error.message || "Error al actualizar el establo.");
+        }
     };
 
     const handleCancel = () => {
@@ -89,9 +103,12 @@ export function StableCard({ stable }: StableCardProps) {
                             type="number"
                             className="text-sm text-[#0E1A12] font-inter focus:outline-none bg-[#F4F8F2] border border-[#E1E7DF] px-2.5 py-1.5 rounded-[8px] w-full transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
                             value={editedLimit}
-                            onChange={(e) => setEditedLimit(Number(e.target.value))}
+                            onChange={(e) => { setEditError(""); setEditedLimit(Number(e.target.value)); }}
                         />
                     </div>
+                    {editError && (
+                        <span className="text-[#D04A3A] text-xs font-inter">{editError}</span>
+                    )}
                 </div>
             ) : (
                 <div className="flex flex-col h-full">

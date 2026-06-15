@@ -39,11 +39,18 @@ export function EditCampaignDialog({ campaign, open, onClose }: EditCampaignDial
             return;
         }
 
+        if (endDate && dayjs(endDate).isBefore(dayjs(), 'day')) {
+            setValidationError('La fecha de fin debe ser futura o igual al día actual.');
+            return;
+        }
+
         setValidationError('');
         setIsSubmitting(true);
         try {
             await updateCampaign({ ...campaign, name, description, startDate, endDate });
             handleClose();
+        } catch (error: any) {
+            setValidationError(error.message || 'Error al actualizar la campaña.');
         } finally {
             setIsSubmitting(false);
         }

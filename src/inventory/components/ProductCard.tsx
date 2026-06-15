@@ -56,7 +56,16 @@ export function ProductCard({ product }: ProductCardProps) {
                         <div>
                             <span className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block">Cantidad</span>
                             <span className="text-[#0E1A12] text-sm font-medium font-inter">
-                                {product.quantity}{product.unit ? ` ${product.unit}` : ''}
+                                {product.quantity}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <ScaleIcon className="w-3.5 h-3.5 text-[#4F6354] shrink-0" />
+                        <div>
+                            <span className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block">Unidad</span>
+                            <span className="text-[#0E1A12] text-sm font-medium font-inter">
+                                {product.unit || "—"}
                             </span>
                         </div>
                     </div>
