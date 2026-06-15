@@ -12,12 +12,14 @@ import { PlusRoute } from "./shared/pages/PlusRoute"
 import { StablesPage } from "./stables/pages/StablesPage"
 import { StaffPage } from "./staff/pages/StaffPage"
 import { SubscriptionManagementPage} from "./subscription/pages/SubscriptionManagementPage"
+import { MockCheckoutPage } from "./subscription/pages/MockCheckoutPage"
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/auth" />} />
       <Route path="/auth" element={<AuthForm />} />
+      <Route path="/checkout" element={<MockCheckoutPage />} />
 
       <Route element={<PrivateRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />

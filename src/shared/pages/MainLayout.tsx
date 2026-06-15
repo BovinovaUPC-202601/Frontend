@@ -14,6 +14,7 @@ import {Package as InventoryIcon} from "lucide-react";
 import {HeartPulse as MonitorHeartIcon} from "lucide-react";
 import {Bell as NotificationsIcon} from "lucide-react";
 import {Sparkles as AutoAwesomeIcon} from "lucide-react";
+import {Crown as SubscriptionIcon} from "lucide-react";
 import {LogOut as LogoutIcon} from "lucide-react";
 import { useAuthStore } from "../../auth/store/auth-store";
 import { useGlobalStore } from "../stores/global-store";
@@ -32,7 +33,7 @@ const navItems: NavItem[] = [
     { to: "/monitoring", icon: <MonitorHeartIcon />, label: "Monitoreo", plusOnly: true },
     { to: "/alerts", icon: <NotificationsIcon />, label: "Alertas" },
     { to: "/ai-assistant", icon: <AutoAwesomeIcon />, label: "Asistente IA", plusOnly: true },
-    { to: "/subscription-management", icon: <AutoAwesomeIcon />, label: "Suscripción" },
+    { to: "/subscription-management", icon: <SubscriptionIcon />, label: "Suscripción" },
 ];
 
 function SidebarContent({ expanded, onToggle, onNavigate }: { expanded: boolean; onToggle: () => void; onNavigate: () => void }) {
@@ -90,7 +91,18 @@ function SidebarContent({ expanded, onToggle, onNavigate }: { expanded: boolean;
                 </div>
 
                 <div className={`overflow-hidden transition-all duration-300 ${expanded ? 'opacity-100 max-h-20' : 'opacity-0 max-h-0 max-w-0'}`}>
-                    <h3 className="text-white font-semibold font-inter text-base leading-tight whitespace-nowrap">{displayName}</h3>
+                    <div className="flex items-center gap-2">
+                        <h3 className="text-white font-semibold font-inter text-base leading-tight whitespace-nowrap">{displayName}</h3>
+                        <span
+                            className={`text-[10px] font-bold font-inter uppercase tracking-wide px-2 py-0.5 rounded-full whitespace-nowrap ${
+                                isPlus
+                                    ? "bg-amber-300 text-amber-900"
+                                    : "bg-white/20 text-white/80"
+                            }`}
+                        >
+                            {isPlus ? "Plus" : "Free"}
+                        </span>
+                    </div>
                     <p className="text-white/60 text-sm font-inter truncate mt-0.5 whitespace-nowrap">{user?.email || ""}</p>
                 </div>
             </div>
