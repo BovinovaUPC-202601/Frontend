@@ -1,10 +1,13 @@
+import { useEffect, useState } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import { CircleCheck as CheckCircleIcon } from "lucide-react";
 import { Medal as WorkspacePremiumIcon } from "lucide-react";
 import { Sprout as GrassIcon } from "lucide-react";
+import { Radio as CollarIcon } from "lucide-react";
 import { useAuthStore } from "../../auth/store/auth-store";
 import { useSubscriptionStore } from "../stores/subscription-store";
+import { subscriptionService } from "../services/subscription-service";
 
 interface PlanDef {
     name: "Free" | "Plus";
@@ -37,14 +40,64 @@ const PLANS: PlanDef[] = [
     },
 ];
 
+type Banner = { kind: "success" | "cancelled" | "verifying"; text: string } | null;
+
 export function SubscriptionManagementPage() {
     const user = useAuthStore(state => state.user);
-    const { updatePlan, loading } = useSubscriptionStore();
+    const { updatePlan, startPlusCheckout, startCollarCheckout, pollUntilActive, fetchCurrentPlan, loading } =
+        useSubscriptionStore();
 
     const currentPlan = user.subscriptionPlan ?? "Free";
+    const [banner, setBanner] = useState<Banner>(null);
+    const [collarsBought, setCollarsBought] = useState(0);
+
+    // Count purchased additional collars from billing history (real data).
+    useEffect(() => {
+        if (currentPlan !== "Plus") return;
+        subscriptionService.getPayments().then(res => {
+            const count = (res.data as any[]).filter(
+                p => p.concept === "AdditionalCollar" && p.status === "Paid").length;
+            setCollarsBought(count);
+        }).catch(() => {});
+    }, [currentPlan]);
+
+    // Handle the redirect back from checkout.
+    useEffect(() => {
+        const status = new URLSearchParams(window.location.search).get("status");
+        if (!status) return;
+        // Clean the URL so a refresh doesn't re-trigger this.
+        window.history.replaceState({}, "", window.location.pathname);
+
+        if (status === "success") {
+            setBanner({ kind: "verifying", text: "Confirmando tu pago…" });
+            pollUntilActive()
+                .then(fetchCurrentPlan)
+                .then(() => setBanner({ kind: "success", text: "¡Listo! Plus activado." }));
+        } else if (status === "cancelled") {
+            setBanner({ kind: "cancelled", text: "Pago cancelado. No se hizo ningún cargo." });
+        }
+    }, []);
+
+    const handleSelect = (plan: "Free" | "Plus") => {
+        if (plan === "Plus") startPlusCheckout();
+        else updatePlan("Free");
+    };
 
     return (
         <div className="flex flex-col mx-20 gap-10 font-mulish">
+            {banner && (
+                <div
+                    className={`rounded-lg px-4 py-3 text-sm font-medium ${
+                        banner.kind === "success"
+                            ? "bg-green-50 text-green-700 border-1 border-green-200"
+                            : banner.kind === "cancelled"
+                              ? "bg-amber-50 text-amber-700 border-1 border-amber-200"
+                              : "bg-blue-50 text-blue-700 border-1 border-blue-200"
+                    }`}
+                >
+                    {banner.text}
+                </div>
+            )}
             <header className="flex flex-col gap-2">
                 <h1 className="text-3xl font-bold text-neutral-900 font-rokkitt">
                     Suscripción
@@ -119,7 +172,7 @@ export function SubscriptionManagementPage() {
 
                                     <button
                                         disabled={loading || isCurrent}
-                                        onClick={() => updatePlan(plan.name)}
+                                        onClick={() => handleSelect(plan.name)}
                                         className={`mt-2 w-full py-2.5 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                                             plan.highlight
                                                 ? "bg-brand-default text-white hover:bg-brand-dark"
@@ -140,6 +193,38 @@ export function SubscriptionManagementPage() {
                     );
                 })}
             </div>
+
+            {/* Additional collars — Plus only */}
+            {currentPlan === "Plus" && (
+                <Card className="w-full max-w-2xl rounded-xl shadow-none border-1 border-neutral-300">
+                    <CardContent>
+                        <div className="flex flex-col gap-4 p-2">
+                            <div className="flex items-center gap-2">
+                                <CollarIcon className="text-brand-default" />
+                                <h2 className="text-xl font-bold text-neutral-900 font-rokkitt">
+                                    Collares adicionales
+                                </h2>
+                            </div>
+                            <p className="text-sm text-neutral-500">
+                                Tu plan incluye 3 collares. Sumá más por <span className="font-semibold">S/25 / mes</span> cada uno.
+                            </p>
+                            <div className="flex items-center justify-between flex-wrap gap-3">
+                                <span className="text-sm text-neutral-600">
+                                    Collares adicionales comprados:{" "}
+                                    <span className="font-semibold text-neutral-900">{collarsBought}</span>
+                                </span>
+                                <button
+                                    disabled={loading}
+                                    onClick={() => startCollarCheckout()}
+                                    className="px-5 py-2.5 rounded-lg font-semibold bg-brand-default text-white hover:bg-brand-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {loading ? "Procesando…" : "Comprar collar — S/25"}
+                                </button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 }

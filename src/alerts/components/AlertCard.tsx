@@ -57,7 +57,7 @@ export function AlertCard({ alert, onMarkAsRead }: Props) {
                         </div>
 
                         <span className="text-xs text-neutral-400">
-                            Bovino ID: {alert.bovineId} · {dayjs(alert.createdAt).format('DD/MM/YYYY HH:mm')}
+                            {alert.isAccountLevel ? 'Cuenta' : `Bovino ID: ${alert.bovineId}`} · {dayjs(alert.createdAt).format('DD/MM/YYYY HH:mm')}
                         </span>
                     </div>
 
