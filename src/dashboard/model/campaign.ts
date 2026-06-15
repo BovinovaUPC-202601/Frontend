@@ -9,10 +9,16 @@ export class Campaign {
         Object.assign(this, data);
 
         if (data.date)
-            this.date = new Date(data.date);
+            this.date = typeof data.date === "string"
+                ? new Date(data.date + "T00:00:00")
+                : new Date(data.date);
         if (data.startDate)
-            this.startDate = new Date(data.startDate);
+            this.startDate = typeof data.startDate === "string"
+                ? new Date(data.startDate + "T00:00:00")
+                : new Date(data.startDate);
         if (data.endDate)
-            this.endDate = new Date(data.endDate);
+            this.endDate = typeof data.endDate === "string"
+                ? new Date(data.endDate + "T00:00:00")
+                : new Date(data.endDate);
     }
 }

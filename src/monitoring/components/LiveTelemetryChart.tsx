@@ -115,7 +115,7 @@ export function LiveTelemetryChart({ records }: Props) {
                             yAxisId: "temp",
                             color: "#f97316",
                             showMark: points.length <= 60,
-                            valueFormatter: (v) => (v == null ? "" : `${v.toFixed(1)} °C`),
+                            valueFormatter: (v: number | null) => (v == null ? "" : `${v.toFixed(1)} °C`),
                         },
                         {
                             data: beats,
@@ -123,7 +123,7 @@ export function LiveTelemetryChart({ records }: Props) {
                             yAxisId: "bpm",
                             color: "#ef4444",
                             showMark: points.length <= 60,
-                            valueFormatter: (v) => (v == null ? "" : `${v.toFixed(0)} BPM`),
+                            valueFormatter: (v: number | null) => (v == null ? "" : `${v.toFixed(0)} BPM`),
                         },
                     ]}
                 >

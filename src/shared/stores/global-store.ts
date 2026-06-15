@@ -118,43 +118,31 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
         }
     },
     addAnimal: async (animal: Animal) => {
-        try {
-            const res = await animalsService.addAnimal(animal);
-            if (res.data) {
-                const created = new Animal(res.data);
-                set((state) => {
-                    state.animals.push(created);
-                });
-                return created;
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await animalsService.addAnimal(animal);
+        if (res.data) {
+            const created = new Animal(res.data);
+            set((state) => {
+                state.animals.push(created);
+            });
+            return created;
         }
         return undefined;
     },
     deleteAnimal: async (animal: Animal) => {
-        try {
-            const res = await animalsService.deleteAnimal(animal);
-            if (res.status === 200) {
-                set((state) => {
-                    state.animals = state.animals.filter((a) => a.id != animal.id);
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await animalsService.deleteAnimal(animal);
+        if (res.status === 200) {
+            set((state) => {
+                state.animals = state.animals.filter((a) => a.id != animal.id);
+            });
         }
     },
     updateAnimal: async (animal: Animal) => {
-        try {
-            const res = await animalsService.updateAnimal(animal);
-            if (res.data) {
-                set((state) => {
-                    const index = state.animals.findIndex((a) => a.id === animal.id);
-                    if (index !== -1) state.animals[index] = new Animal(res.data);
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await animalsService.updateAnimal(animal);
+        if (res.data) {
+            set((state) => {
+                const index = state.animals.findIndex((a) => a.id === animal.id);
+                if (index !== -1) state.animals[index] = new Animal(res.data);
+            });
         }
     },
 
@@ -197,16 +185,12 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
         }
     },
     updateStable: async (stable: Stable) => {
-        try {
-            const res = await stableService.updateStable(stable);
-            if (res.data) {
-                set((state) => {
-                    const index = state.stables.findIndex((s) => s.id === stable.id);
-                    if (index !== -1) state.stables[index] = new Stable(res.data);
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await stableService.updateStable(stable);
+        if (res.data) {
+            set((state) => {
+                const index = state.stables.findIndex((s) => s.id === stable.id);
+                if (index !== -1) state.stables[index] = new Stable(res.data);
+            });
         }
     },
 
@@ -225,28 +209,20 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
         }
     },
     addCampaign: async (campaign) => {
-        try {
-            const res = await campaignService.addCampaign(campaign);
-            if (res.data) {
-                set((state) => {
-                    state.campaigns.push(new Campaign(res.data));
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await campaignService.addCampaign(campaign);
+        if (res.data) {
+            set((state) => {
+                state.campaigns.push(new Campaign(res.data));
+            });
         }
     },
     updateCampaign: async (campaign) => {
-        try {
-            const res = await campaignService.updateCampaign(campaign);
-            if (res.data) {
-                set((state) => {
-                    const index = state.campaigns.findIndex((c) => c.id === campaign.id);
-                    if (index !== -1) state.campaigns[index] = new Campaign(res.data);
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await campaignService.updateCampaign(campaign);
+        if (res.data) {
+            set((state) => {
+                const index = state.campaigns.findIndex((c) => c.id === campaign.id);
+                if (index !== -1) state.campaigns[index] = new Campaign(res.data);
+            });
         }
     },
     deleteCampaign: async (campaign) => {
@@ -381,28 +357,20 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
         }
     },
     addProduct: async (product) => {
-        try {
-            const res = await inventoryService.createProduct(product);
-            if (res.data) {
-                set(state => {
-                    state.products.push(new Product(res.data));
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await inventoryService.createProduct(product);
+        if (res.data) {
+            set(state => {
+                state.products.push(new Product(res.data));
+            });
         }
     },
     updateProduct: async (product) => {
-        try {
-            const res = await inventoryService.updateProduct(product);
-            if (res.data) {
-                set((state) => {
-                    const index = state.products.findIndex((p) => p.id === product.id);
-                    if (index !== -1) state.products[index] = new Product(res.data);
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await inventoryService.updateProduct(product);
+        if (res.data) {
+            set((state) => {
+                const index = state.products.findIndex((p) => p.id === product.id);
+                if (index !== -1) state.products[index] = new Product(res.data);
+            });
         }
     },
     deleteProduct: async (product) => {

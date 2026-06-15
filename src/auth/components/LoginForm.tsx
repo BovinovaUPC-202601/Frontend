@@ -6,13 +6,43 @@ import { useAuthStore } from "../store/auth-store";
 
 export function LoginForm() {
     const navigate = useNavigate();
-    const { user, login, setUser, error, isLoading } = useAuthStore();
+    const { user, login, setUser, setError, error, isLoading } = useAuthStore();
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [localError, setLocalError] = useState("");
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setUser({ [name]: value });
+        setLocalError("");
+        if (error) setError(null);
+    };
+
+    const displayError = localError || error;
+
+    const handleLogin = async () => {
+        if (!user.email?.trim()) {
+            setLocalError("El email es requerido.");
+            return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) {
+            setLocalError("Ingresa un email válido.");
+            return;
+        }
+        if (!user.password) {
+            setLocalError("La contraseña es requerida.");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const success = await login();
+            if (success) {
+                navigate("/dashboard", { replace: true });
+            }
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -52,25 +82,15 @@ export function LoginForm() {
                 </div>
             </div>
 
-            {error && (
-                <span className="text-[#D04A3A] text-xs font-inter">{error}</span>
+            {displayError && (
+                <span className="text-[#D04A3A] text-xs font-inter">{displayError}</span>
             )}
 
             <button
                 type="button"
                 disabled={isSubmitting || isLoading}
                 className="w-full h-14 bg-gradient-to-r from-[#10A065] to-[#0A7E4D] text-white font-inter text-sm font-semibold rounded-[14px] flex items-center justify-center gap-2 cursor-pointer transition-all duration-150 active:scale-[0.97] shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
-                onClick={async () => {
-                    setIsSubmitting(true);
-                    try {
-                        const success = await login();
-                        if (success) {
-                            navigate("/dashboard", { replace: true });
-                        }
-                    } finally {
-                        setIsSubmitting(false);
-                    }
-                }}
+                onClick={handleLogin}
                 aria-busy={isSubmitting || isLoading}
             >
                 {isSubmitting || isLoading ? (
