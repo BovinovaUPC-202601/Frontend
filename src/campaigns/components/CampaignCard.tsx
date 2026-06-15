@@ -6,6 +6,8 @@ import {Circle as CircleIcon} from "lucide-react"
 import { useState } from 'react';
 import { createPortal } from "react-dom";
 import { useGlobalStore } from "../../shared/stores/global-store";
+import { useAuthStore } from "../../auth/store/auth-store";
+import { canEdit } from "../../shared/utils/access-control";
 import type { Campaign } from '../model/campaign';
 import dayjs from 'dayjs';
 import { EditCampaignDialog } from './EditCampaignDialog';
@@ -16,6 +18,7 @@ interface CampaignCardProps {
 
 export function CampaignCard({ campaign }: CampaignCardProps) {
     const { deleteCampaign } = useGlobalStore();
+    const editable = useAuthStore((s) => canEdit(s.user));
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -58,14 +61,16 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
                                 </div>
                                 <p className="text-[#4F6354] text-xs font-inter mt-0.5 line-clamp-2">{campaign.description}</p>
                             </div>
-                            <div className="flex gap-1 shrink-0 ml-2">
-                                <button className="p-1.5 rounded-[8px] text-[#7E8F82] hover:text-[#10A065] hover:bg-[#C8F0DA] transition-all duration-150" onClick={() => setIsEditOpen(true)} title="Editar">
-                                    <EditIcon className="w-4 h-4" />
-                                </button>
-                                <button className="p-1.5 rounded-[8px] text-[#7E8F82] hover:text-[#D04A3A] hover:bg-[#FFD9D2] transition-all duration-150" onClick={() => setShowDeleteConfirm(true)} title="Eliminar">
-                                    <DeleteIcon className="w-4 h-4" />
-                                </button>
-                            </div>
+                            {editable && (
+                                <div className="flex gap-1 shrink-0 ml-2">
+                                    <button className="p-1.5 rounded-[8px] text-[#7E8F82] hover:text-[#10A065] hover:bg-[#C8F0DA] transition-all duration-150" onClick={() => setIsEditOpen(true)} title="Editar">
+                                        <EditIcon className="w-4 h-4" />
+                                    </button>
+                                    <button className="p-1.5 rounded-[8px] text-[#7E8F82] hover:text-[#D04A3A] hover:bg-[#FFD9D2] transition-all duration-150" onClick={() => setShowDeleteConfirm(true)} title="Eliminar">
+                                        <DeleteIcon className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

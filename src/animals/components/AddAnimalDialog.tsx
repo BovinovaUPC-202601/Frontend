@@ -65,6 +65,9 @@ export function AddAnimalDialog() {
   const isBirthDateValid = newAnimal.birthDate
     ? !dayjs(newAnimal.birthDate).isAfter(dayjs())
     : false;
+  const birthDateError = newAnimal.birthDate && !isBirthDateValid
+    ? "La fecha de nacimiento no puede ser una fecha futura"
+    : "";
   const canSubmit =
     hasRequiredFields && isBirthDateValid && isThresholdValid && isRangeValid;
 
@@ -116,6 +119,22 @@ export function AddAnimalDialog() {
 
     setValidationError("");
     setIsSubmitting(true);
+
+    // Check stable capacity before submitting
+    const selectedStable = stables.find((s) => s.id === newAnimal.stableId);
+    if (selectedStable && selectedStable.limit !== undefined) {
+      const animalsInStable = useGlobalStore.getState().animals.filter(
+        (a) => a.stableId === newAnimal.stableId,
+      ).length;
+      if (animalsInStable >= selectedStable.limit) {
+        setValidationError(
+          "El establo seleccionado está lleno. Elegí otro o aumentá su capacidad.",
+        );
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     try {
       const created = await addAnimal(newAnimal);
 
@@ -133,6 +152,8 @@ export function AddAnimalDialog() {
       }
 
       handleClose();
+    } catch (error: any) {
+      setValidationError(error.message || "Error al crear el animal.");
     } finally {
       setIsSubmitting(false);
     }
@@ -236,6 +257,9 @@ export function AddAnimalDialog() {
               }}
               sx={{ width: "100%" }}
             />
+            {birthDateError && (
+              <span className="text-[#D04A3A] text-xs font-inter">{birthDateError}</span>
+            )}
           </div>
 
           {/* Raza */}

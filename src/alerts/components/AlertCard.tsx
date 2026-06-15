@@ -6,14 +6,18 @@ import {TriangleAlert as WarningAmberIcon} from "lucide-react";
 import {CircleAlert as ErrorIcon} from "lucide-react";
 import {CircleCheck as CheckCircleOutlineIcon} from "lucide-react";
 import dayjs from "dayjs";
+import { useAuthStore } from "../../auth/store/auth-store";
+import { canEdit } from "../../shared/utils/access-control";
 import type { Alert } from "../model/alert";
 
 interface Props {
     alert: Alert;
+    bovineName?: string;
     onMarkAsRead: (alertId: number) => void;
 }
 
-export function AlertCard({ alert, onMarkAsRead }: Props) {
+export function AlertCard({ alert, bovineName, onMarkAsRead }: Props) {
+    const editable = useAuthStore((s) => canEdit(s.user));
     const borderColor = alert.isRed
         ? 'border-red-400'
         : alert.isYellow
@@ -57,11 +61,13 @@ export function AlertCard({ alert, onMarkAsRead }: Props) {
                         </div>
 
                         <span className="text-xs text-neutral-400">
-                            {alert.isAccountLevel ? 'Cuenta' : `Bovino ID: ${alert.bovineId}`} · {dayjs(alert.createdAt).format('DD/MM/YYYY HH:mm')}
+                            {alert.isAccountLevel
+                                ? 'Cuenta'
+                                : bovineName ? `${bovineName} (ID: ${alert.bovineId})` : `Bovino ID: ${alert.bovineId}`} · {dayjs(alert.createdAt).format('DD/MM/YYYY HH:mm')}
                         </span>
                     </div>
 
-                    {alert.isUnread && (
+                    {alert.isUnread && editable && (
                         <Button
                             size="small"
                             variant="outlined"

@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { useGlobalStore } from '../../shared/stores/global-store';
 import type { Product } from '../model/Product';
+import { PRODUCT_UNITS } from '../model/product-units';
 import {X as CloseIcon} from "lucide-react";
 import {Package as InventoryIcon} from "lucide-react";
 
@@ -46,6 +47,11 @@ export function EditProductDialog({ product, open, onClose }: EditProductDialogP
             return;
         }
 
+        if (expirationDate && dayjs(expirationDate).isBefore(dayjs(), 'day')) {
+            setValidationError('La fecha de vencimiento debe ser futura.');
+            return;
+        }
+
         setValidationError('');
         setIsSubmitting(true);
         try {
@@ -58,6 +64,8 @@ export function EditProductDialog({ product, open, onClose }: EditProductDialogP
                 expirationDate: expirationDate ? dayjs(expirationDate).format('YYYY-MM-DD') : undefined,
             });
             handleClose();
+        } catch (error: any) {
+            setValidationError(error.message || 'Error al actualizar el producto.');
         } finally {
             setIsSubmitting(false);
         }
@@ -109,13 +117,17 @@ export function EditProductDialog({ product, open, onClose }: EditProductDialogP
                         </div>
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="edit-product-unit" className="text-sm font-medium text-[#0E1A12] font-inter">Unidad (opcional)</label>
-                            <input
-                                id="edit-product-unit" type="text" autoComplete='off'
-                                placeholder="kg, cajas, litros"
-                                className="focus:outline-none border border-[#E1E7DF] px-3 py-2.5 rounded-[10px] text-sm text-[#0E1A12] font-inter placeholder-[#7E8F82] transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
+                            <select
+                                id="edit-product-unit"
                                 value={unit}
-                                onChange={(e) => setUnit(e.target.value)}
-                            />
+                                onChange={(e) => setUnit(e.target.value || '')}
+                                className={`focus:outline-none bg-white border border-[#E1E7DF] px-3 py-2.5 rounded-[10px] font-inter text-sm transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA] ${!unit ? "text-[#7E8F82]" : "text-[#0E1A12]"}`}
+                            >
+                                <option value="">Sin unidad</option>
+                                {PRODUCT_UNITS.map(u => (
+                                    <option key={u.value} value={u.value} className="text-[#0E1A12]">{u.label}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 

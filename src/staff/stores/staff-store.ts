@@ -12,12 +12,9 @@ interface StaffState {
     filteredStaff: Staff[];
     isFiltered: boolean;
 
-    // Modal & New Staff
+    // Modal
     isOpenModal: boolean;
     toggleModal: () => void;
-    newStaff: Staff;
-    setNewStaff: (staff: Partial<Staff>) => void;
-    resetNewStaff: () => void;
 }
 
 export const useStaffStore = create(immer<StaffState>((set) => ({
@@ -36,8 +33,10 @@ export const useStaffStore = create(immer<StaffState>((set) => ({
         let filtered = staff;
 
         if (state.searchQuery.trim() !== "") {
+            const query = state.searchQuery.toLowerCase();
             filtered = filtered.filter(s =>
-                s.name?.toLowerCase().includes(state.searchQuery.toLowerCase())
+                s.name?.toLowerCase().includes(query) ||
+                s.email?.toLowerCase().includes(query)
             );
         }
 
@@ -51,10 +50,7 @@ export const useStaffStore = create(immer<StaffState>((set) => ({
     filteredStaff: [],
     isFiltered: false,
 
-    // Modal & New Staff
+    // Modal
     isOpenModal: false,
     toggleModal: () => set(state => { state.isOpenModal = !state.isOpenModal }),
-    newStaff: new Staff(),
-    setNewStaff: (staff) => set(state => { state.newStaff = { ...state.newStaff, ...staff } }),
-    resetNewStaff: () => set(state => { state.newStaff = new Staff() }),
 })));

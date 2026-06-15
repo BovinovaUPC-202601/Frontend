@@ -11,6 +11,12 @@ export class AuthService {
     async login(user: User) {
         return await http.post(this.endpoint + "/sign-in", user);
     }
+
+    // Profile includes the real permissions (isStaff, accessLevel, canEdit, ...)
+    // resolved by the backend from the database — never trust the token alone.
+    async getProfile() {
+        return await http.get(this.endpoint + "/profile");
+    }
 }
 
 export const authService = new AuthService();
