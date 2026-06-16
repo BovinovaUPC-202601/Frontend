@@ -87,6 +87,19 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
                     </div>
                 </div>
 
+                {campaign.stableNames && campaign.stableNames.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                        <span className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider">Establos</span>
+                        <div className="flex flex-wrap gap-1">
+                            {campaign.stableNames.map((name, i) => (
+                                <span key={i}
+                                    className="inline-block px-2 py-0.5 rounded-full bg-[#F4F8F2] text-[#4F6354] text-[11px] font-inter font-medium"
+                                >{name}</span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {status === "active" && (
                     <div className="mt-2">
                         <div className="flex items-center justify-between mb-1">

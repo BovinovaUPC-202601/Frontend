@@ -14,12 +14,13 @@ interface EditCampaignDialogProps {
 }
 
 export function EditCampaignDialog({ campaign, open, onClose }: EditCampaignDialogProps) {
-    const { updateCampaign } = useGlobalStore();
+    const { updateCampaign, stables } = useGlobalStore();
 
     const [name, setName] = useState(campaign.name ?? '');
     const [description, setDescription] = useState(campaign.description ?? '');
     const [startDate, setStartDate] = useState<Date | undefined>(campaign.startDate);
     const [endDate, setEndDate] = useState<Date | undefined>(campaign.endDate);
+    const [stableIds, setStableIds] = useState<number[]>(campaign.stableIds ?? []);
     const [validationError, setValidationError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -28,9 +29,20 @@ export function EditCampaignDialog({ campaign, open, onClose }: EditCampaignDial
         onClose();
     };
 
+    const toggleStable = (id: number) => {
+        setStableIds(prev =>
+            prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+        );
+    };
+
     const handleSave = async () => {
         if (!name.trim() || !description.trim() || !startDate || !endDate) {
             setValidationError('Completa todos los campos');
+            return;
+        }
+
+        if (stableIds.length === 0) {
+            setValidationError('Selecciona al menos un establo');
             return;
         }
 
@@ -47,7 +59,7 @@ export function EditCampaignDialog({ campaign, open, onClose }: EditCampaignDial
         setValidationError('');
         setIsSubmitting(true);
         try {
-            await updateCampaign({ ...campaign, name, description, startDate, endDate });
+            await updateCampaign({ ...campaign, name, description, startDate, endDate, stableIds });
             handleClose();
         } catch (error: any) {
             setValidationError(error.message || 'Error al actualizar la campaña.');
@@ -94,6 +106,34 @@ export function EditCampaignDialog({ campaign, open, onClose }: EditCampaignDial
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                         />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-sm font-medium text-[#0E1A12] font-inter">Establos</label>
+                        <div className="border border-[#E1E7DF] rounded-[10px] p-3 flex flex-col gap-2 max-h-48 overflow-y-auto">
+                            {stables.length === 0 && (
+                                <span className="text-sm text-[#7E8F82] font-inter">No hay establos disponibles</span>
+                            )}
+                            {stables.map((stable) => (
+                                <label
+                                    key={stable.id}
+                                    className="flex items-center gap-2 cursor-pointer hover:bg-[#F4F8F2] px-2 py-1.5 rounded-[8px] transition-all duration-150"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        className="accent-[#10A065] w-4 h-4"
+                                        checked={stableIds.includes(stable.id!)}
+                                        onChange={() => toggleStable(stable.id!)}
+                                    />
+                                    <span className="text-sm text-[#0E1A12] font-inter">{stable.name}</span>
+                                </label>
+                            ))}
+                        </div>
+                        {stableIds.length > 0 && (
+                            <span className="text-xs text-[#7E8F82] font-inter">
+                                {stableIds.length} seleccionado{stableIds.length !== 1 ? "s" : ""}
+                            </span>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

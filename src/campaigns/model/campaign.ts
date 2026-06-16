@@ -5,6 +5,8 @@ export class Campaign {
     startDate?: Date;
     endDate?: Date;
     isActive?: boolean;
+    stableIds?: number[];
+    stableNames?: string[];
 
     constructor(data: Partial<Campaign> = {}) {
         Object.assign(this, data);
@@ -23,5 +25,8 @@ export class Campaign {
             const now = new Date();
             this.isActive = this.startDate <= now && now <= this.endDate;
         }
+
+        this.stableIds = data.stableIds ?? [];
+        this.stableNames = data.stableNames ?? [];
     }
 }
