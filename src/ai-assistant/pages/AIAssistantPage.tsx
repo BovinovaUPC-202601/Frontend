@@ -17,10 +17,19 @@ import { aiAssistantService } from "../services/ai-assistant-service";
 
 type ChatMode = "general" | "bovine";
 
+const errorStatus = (error: unknown) =>
+    typeof error === "object" && error !== null
+        ? (error as { response?: { status?: number } }).response?.status
+        : undefined;
+
 /** The AI endpoints are gated behind the Plus plan; the backend answers with HTTP 403. */
-const isPlusRequired = (error: unknown) =>
-    typeof error === "object" && error !== null &&
-    (error as { response?: { status?: number } }).response?.status === 403;
+const isPlusRequired = (error: unknown) => errorStatus(error) === 403;
+
+/** The model provider throttled us (token/minute rate limit); the backend answers with HTTP 429. */
+const isRateLimited = (error: unknown) => errorStatus(error) === 429;
+
+const RATE_LIMIT_MESSAGE =
+    "El asistente está recibiendo muchas solicitudes ahora mismo (límite de uso). Espera unos segundos e inténtalo de nuevo.";
 
 const timeFromIso = (iso: string) => {
     const date = new Date(iso);
@@ -232,6 +241,9 @@ export function AIAssistantPage() {
             if (isPlusRequired(error)) {
                 setRequiresPlus(true);
                 setChatError("El Asistente IA está disponible en el plan Plus.");
+            } else if (isRateLimited(error)) {
+                setChatError(RATE_LIMIT_MESSAGE);
+                addChatMessage(createMessage("assistant", RATE_LIMIT_MESSAGE));
             } else {
                 setChatError("No se pudo obtener respuesta del asistente.");
                 addChatMessage(createMessage("assistant", "No pude completar la consulta. Intenta nuevamente."));
@@ -299,6 +311,8 @@ export function AIAssistantPage() {
             if (isPlusRequired(error)) {
                 setRequiresPlus(true);
                 setAnalysisError("El análisis visual está disponible en el plan Plus.");
+            } else if (isRateLimited(error)) {
+                setAnalysisError(RATE_LIMIT_MESSAGE);
             } else {
                 setAnalysisError("No se pudo completar el analisis visual.");
             }

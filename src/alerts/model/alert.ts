@@ -1,6 +1,6 @@
 export class Alert {
     id: number = 0;
-    bovineId: number = 0;
+    bovineId: number | null = null; // null for account-level alerts (e.g. CollarReturn)
     userId: number = 0;
     alertType: string = '';
     urgencyLevel: string = '';
@@ -16,12 +16,16 @@ export class Alert {
     get isRed()    { return this.urgencyLevel === 'Red'; }
     get isYellow() { return this.urgencyLevel === 'Yellow'; }
 
+    // Account-level alerts (not tied to a bovine), e.g. collar-return.
+    get isAccountLevel() { return this.bovineId == null; }
+
     // Friendly Spanish label for the alert category. The specific condition
     // (fiebre, hipotermia, taquicardia, …) is in `message`, not here.
     get alertTypeLabel() {
         const labels: Record<string, string> = {
             BiometricAnomaly: 'Anomalía biométrica',
             VisualAnomaly:    'Anomalía visual',
+            CollarReturn:     'Devolución de collares',
         };
         return labels[this.alertType] ?? this.alertType;
     }

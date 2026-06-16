@@ -1,5 +1,7 @@
 import {Plus as AddIcon} from "lucide-react";
 import { useGlobalStore } from '../../shared/stores/global-store';
+import { useAuthStore } from '../../auth/store/auth-store';
+import { canEdit } from '../../shared/utils/access-control';
 import { useInventoryStore } from '../stores/inventory-store';
 import { CategoryCard } from './CategoryCard';
 import {Boxes as Inventory2Icon} from "lucide-react";
@@ -7,18 +9,21 @@ import {Boxes as Inventory2Icon} from "lucide-react";
 export function CategoryList() {
     const { categories, products } = useGlobalStore();
     const { toggleModalCategory } = useInventoryStore();
+    const editable = useAuthStore((s) => canEdit(s.user));
 
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold text-[#0E1A12] font-inter">Categorías</h2>
-                <button
-                    className="cursor-pointer flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#10A065] to-[#0A7E4D] text-white font-inter font-medium text-sm rounded-[14px] transition-all duration-150 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.97]"
-                    onClick={toggleModalCategory}
-                >
-                    <AddIcon className="w-5 h-5" />
-                    Añadir categoría
-                </button>
+                {editable && (
+                    <button
+                        className="cursor-pointer flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#10A065] to-[#0A7E4D] text-white font-inter font-medium text-sm rounded-[14px] transition-all duration-150 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.97]"
+                        onClick={toggleModalCategory}
+                    >
+                        <AddIcon className="w-5 h-5" />
+                        Añadir categoría
+                    </button>
+                )}
             </div>
 
             {categories.length === 0 ? (

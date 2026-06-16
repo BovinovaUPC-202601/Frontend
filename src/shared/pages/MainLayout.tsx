@@ -14,25 +14,34 @@ import {Package as InventoryIcon} from "lucide-react";
 import {HeartPulse as MonitorHeartIcon} from "lucide-react";
 import {Bell as NotificationsIcon} from "lucide-react";
 import {Sparkles as AutoAwesomeIcon} from "lucide-react";
+import {Crown as SubscriptionIcon} from "lucide-react";
 import {LogOut as LogoutIcon} from "lucide-react";
 import { useAuthStore } from "../../auth/store/auth-store";
 import { useGlobalStore } from "../stores/global-store";
 import { useSubscriptionStore } from "../../subscription/stores/subscription-store";
 import { AlertToaster } from "../../alerts/components/AlertToaster";
+import { canManageStaff, canManageSubscription } from "../utils/access-control";
 
-type NavItem = { to: string; icon: ReactNode; label: string; plusOnly?: boolean };
+type NavItem = {
+    to: string;
+    icon: ReactNode;
+    label: string;
+    plusOnly?: boolean;
+    requiresStaffManagement?: boolean;
+    requiresSubscriptionManagement?: boolean;
+};
 
 const navItems: NavItem[] = [
     { to: "/dashboard", icon: <DashboardIcon />, label: "Panel" },
     { to: "/animals", icon: <PetsIcon />, label: "Ganado" },
     { to: "/stables", icon: <CabinIcon />, label: "Establos" },
     { to: "/campaigns", icon: <CampaignIcon />, label: "Campañas" },
-    { to: "/staff", icon: <PeopleAltIcon />, label: "Personal" },
+    { to: "/staff", icon: <PeopleAltIcon />, label: "Personal", requiresStaffManagement: true },
     { to: "/inventory", icon: <InventoryIcon />, label: "Inventario" },
     { to: "/monitoring", icon: <MonitorHeartIcon />, label: "Monitoreo", plusOnly: true },
     { to: "/alerts", icon: <NotificationsIcon />, label: "Alertas" },
     { to: "/ai-assistant", icon: <AutoAwesomeIcon />, label: "Asistente IA", plusOnly: true },
-    { to: "/subscription-management", icon: <AutoAwesomeIcon />, label: "Suscripción" },
+    { to: "/subscription-management", icon: <SubscriptionIcon />, label: "Suscripción", requiresSubscriptionManagement: true },
 ];
 
 function SidebarContent({ expanded, onToggle, onNavigate }: { expanded: boolean; onToggle: () => void; onNavigate: () => void }) {
@@ -90,13 +99,28 @@ function SidebarContent({ expanded, onToggle, onNavigate }: { expanded: boolean;
                 </div>
 
                 <div className={`overflow-hidden transition-all duration-300 ${expanded ? 'opacity-100 max-h-20' : 'opacity-0 max-h-0 max-w-0'}`}>
-                    <h3 className="text-white font-semibold font-inter text-base leading-tight whitespace-nowrap">{displayName}</h3>
+                    <div className="flex items-center gap-2">
+                        <h3 className="text-white font-semibold font-inter text-base leading-tight whitespace-nowrap">{displayName}</h3>
+                        <span
+                            className={`text-[10px] font-bold font-inter uppercase tracking-wide px-2 py-0.5 rounded-full whitespace-nowrap ${
+                                isPlus
+                                    ? "bg-amber-300 text-amber-900"
+                                    : "bg-white/20 text-white/80"
+                            }`}
+                        >
+                            {isPlus ? "Plus" : "Free"}
+                        </span>
+                    </div>
                     <p className="text-white/60 text-sm font-inter truncate mt-0.5 whitespace-nowrap">{user?.email || ""}</p>
                 </div>
             </div>
 
             <nav className={`flex-1 flex flex-col gap-0.5 transition-all duration-300 ${expanded ? 'p-3 mt-2' : 'p-2 mt-3 items-center'}`}>
-                {navItems.filter(item => !item.plusOnly || isPlus).map(item => (
+                {navItems
+                    .filter(item => !item.plusOnly || isPlus)
+                    .filter(item => !item.requiresStaffManagement || canManageStaff(user))
+                    .filter(item => !item.requiresSubscriptionManagement || canManageSubscription(user))
+                    .map(item => (
                     <NavLink
                         key={item.to}
                         to={item.to}
@@ -140,14 +164,21 @@ export function MainLayout() {
     const [sidebarExpanded, setSidebarExpanded] = useState(true);
     const fetchCurrentPlan = useSubscriptionStore(state => state.fetchCurrentPlan);
     const loadAppData = useGlobalStore(state => state.loadAppData);
+    const fetchPermissions = useAuthStore(state => state.fetchPermissions);
 
-    // Rehydrate plan + global app data (breeds, animals, stables, …) on mount so
-    // everything survives a page refresh — the auth store resets on reload while
-    // the token persists in localStorage, and loadAppData otherwise only runs at login.
+    // Rehydrate permissions + plan + global app data (breeds, animals, stables, …)
+    // from the backend on mount so everything survives a page refresh — the auth
+    // store resets on reload while the token persists in localStorage, and
+    // loadAppData otherwise only runs at login. Staff get the OWNER's plan from the
+    // profile (the subscription endpoint is owner-only and would answer 403), so
+    // fetchCurrentPlan runs only for owners.
     useEffect(() => {
-        fetchCurrentPlan();
-        loadAppData();
-    }, [fetchCurrentPlan, loadAppData]);
+        (async () => {
+            await fetchPermissions();
+            loadAppData();
+            if (!useAuthStore.getState().user.isStaff) fetchCurrentPlan();
+        })();
+    }, [fetchPermissions, fetchCurrentPlan, loadAppData]);
 
     return (
         <div className="min-h-screen bg-[#D8E8DD]">
