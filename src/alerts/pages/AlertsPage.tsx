@@ -34,7 +34,7 @@ export function AlertsPage() {
 
     // Only offer bovines that actually have alerts, so the dropdown stays relevant.
     const bovineOptions = useMemo(() => {
-        const ids = Array.from(new Set(alerts.map(a => a.bovineId)));
+        const ids = Array.from(new Set(alerts.map(a => a.bovineId).filter((id): id is number => id !== null)));
         return ids
             .map(id => ({ id, name: nameByBovineId.get(id) ?? `Bovino ${id}` }))
             .sort((a, b) => a.name.localeCompare(b.name));
@@ -100,7 +100,7 @@ export function AlertsPage() {
                         <AlertCard
                             key={alert.id}
                             alert={alert}
-                            bovineName={nameByBovineId.get(alert.bovineId)}
+                            bovineName={alert.bovineId !== null ? nameByBovineId.get(alert.bovineId) : undefined}
                             onMarkAsRead={markAsRead}
                         />
                     ))}
