@@ -9,6 +9,18 @@ export class AnimalsService {
     return await http.get<BovineBreed[]>(this.endpoint + "/breeds");
   }
 
+  async createBreed(breed: { name: string; minTemperature: number; maxTemperature: number; minHeartRate: number; maxHeartRate: number }) {
+    return await http.post<BovineBreed>(this.endpoint + "/breeds", breed);
+  }
+
+  async updateBreed(id: number, breed: { name: string; minTemperature: number; maxTemperature: number; minHeartRate: number; maxHeartRate: number }) {
+    return await http.put<BovineBreed>(this.endpoint + "/breeds/" + id, breed);
+  }
+
+  async deleteBreed(id: number) {
+    return await http.delete(this.endpoint + "/breeds/" + id);
+  }
+
   async getAnimals() {
     return await http.get<Animal[]>(this.endpoint);
   }
