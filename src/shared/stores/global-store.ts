@@ -38,6 +38,9 @@ interface GlobalState {
     addAnimal: (animal: Animal) => Promise<Animal | undefined>;
     deleteAnimal: (animal: Animal) => Promise<void>;
     updateAnimal: (animal: Animal) => Promise<void>;
+    addBreed: (breed: { name: string; minTemperature: number; maxTemperature: number; minHeartRate: number; maxHeartRate: number }) => Promise<void>;
+    updateBreed: (id: number, breed: { name: string; minTemperature: number; maxTemperature: number; minHeartRate: number; maxHeartRate: number }) => Promise<void>;
+    deleteBreed: (id: number) => Promise<void>;
 
     // Stables
     stables: Stable[];
@@ -152,6 +155,31 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
             set((state) => {
                 const index = state.animals.findIndex((a) => a.id === animal.id);
                 if (index !== -1) state.animals[index] = new Animal(res.data);
+            });
+        }
+    },
+    addBreed: async (breed) => {
+        const res = await animalsService.createBreed(breed);
+        if (res.data) {
+            set((state) => {
+                state.breeds.push(res.data);
+            });
+        }
+    },
+    updateBreed: async (id, breed) => {
+        const res = await animalsService.updateBreed(id, breed);
+        if (res.data) {
+            set((state) => {
+                const index = state.breeds.findIndex((b) => b.id === id);
+                if (index !== -1) state.breeds[index] = res.data;
+            });
+        }
+    },
+    deleteBreed: async (id) => {
+        const res = await animalsService.deleteBreed(id);
+        if (res.status === 200) {
+            set((state) => {
+                state.breeds = state.breeds.filter((b) => b.id !== id);
             });
         }
     },

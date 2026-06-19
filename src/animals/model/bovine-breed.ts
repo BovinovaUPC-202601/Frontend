@@ -5,4 +5,5 @@ export interface BovineBreed {
     maxTemperature: number;
     minHeartRate: number;
     maxHeartRate: number;
+    userId?: number | null;
 }
