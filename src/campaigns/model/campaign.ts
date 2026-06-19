@@ -7,6 +7,8 @@ export class Campaign {
     isActive?: boolean;
     stableIds?: number[];
     stableNames?: string[];
+    bovineIds?: number[];
+    bovineNames?: string[];
 
     constructor(data: Partial<Campaign> = {}) {
         Object.assign(this, data);
@@ -28,5 +30,7 @@ export class Campaign {
 
         this.stableIds = data.stableIds ?? [];
         this.stableNames = data.stableNames ?? [];
+        this.bovineIds = data.bovineIds ?? [];
+        this.bovineNames = data.bovineNames ?? [];
     }
 }

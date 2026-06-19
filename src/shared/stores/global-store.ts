@@ -264,15 +264,11 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
         }
     },
     deleteCampaign: async (campaign) => {
-        try {
-            const res = await campaignService.deleteCampaign(campaign);
-            if (res.status === 200) {
-                set((state) => {
-                    state.campaigns = state.campaigns.filter((c) => c.id != campaign.id);
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await campaignService.deleteCampaign(campaign);
+        if (res.status === 200) {
+            set((state) => {
+                state.campaigns = state.campaigns.filter((c) => c.id != campaign.id);
+            });
         }
     },
 

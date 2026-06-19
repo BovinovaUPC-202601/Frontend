@@ -21,6 +21,7 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
     const editable = useAuthStore((s) => canEdit(s.user));
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteError, setDeleteError] = useState('');
 
     const now = dayjs();
     const start = campaign.startDate ? dayjs(campaign.startDate) : null;
@@ -99,6 +100,18 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
                         </div>
                     </div>
                 )}
+                {campaign.bovineNames && campaign.bovineNames.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                        <span className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider">Bovinos</span>
+                        <div className="flex flex-wrap gap-1">
+                            {campaign.bovineNames.map((name, i) => (
+                                <span key={i}
+                                    className="inline-block px-2 py-0.5 rounded-full bg-[#FFE9C8] text-[#B17A2B] text-[11px] font-inter font-medium"
+                                >{name}</span>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {status === "active" && (
                     <div className="mt-2">
@@ -116,20 +129,31 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
             <EditCampaignDialog campaign={campaign} open={isEditOpen} onClose={() => setIsEditOpen(false)} />
 
             {showDeleteConfirm && createPortal(
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)}>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}>
                     <div className="bg-white rounded-[20px] shadow-xl w-full max-w-sm mx-4 p-6 animate-fade-in" onClick={(e) => e.stopPropagation()}>
                         <h3 className="text-lg font-bold text-[#0E1A12] font-inter mb-2">Eliminar campaña</h3>
                         <p className="text-sm text-[#4F6354] font-inter mb-6">
                             ¿Estás seguro de que querés eliminar <strong>{campaign.name}</strong>? Esta acción no se puede deshacer.
                         </p>
+                        {deleteError && (
+                            <p className="text-[#D04A3A] text-sm text-center font-inter mb-4">{deleteError}</p>
+                        )}
                         <div className="flex justify-end gap-3">
                             <button
                                 className="cursor-pointer px-4 py-2 rounded-[12px] text-sm font-medium text-[#4F6354] font-inter bg-[#F4F8F2] hover:bg-[#E1E7DF] transition-all duration-150"
-                                onClick={() => setShowDeleteConfirm(false)}
+                                onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}
                             >Cancelar</button>
                             <button
                                 className="cursor-pointer px-4 py-2 rounded-[12px] text-sm font-medium text-white font-inter bg-gradient-to-r from-[#D04A3A] to-[#B33A2E] transition-all duration-150 hover:shadow-lg active:scale-[0.97]"
-                                onClick={() => { deleteCampaign(campaign); setShowDeleteConfirm(false); }}
+                                onClick={async () => {
+                                    setDeleteError('');
+                                    try {
+                                        await deleteCampaign(campaign);
+                                        setShowDeleteConfirm(false);
+                                    } catch (error: any) {
+                                        setDeleteError(error.message || 'Error al eliminar la campaña.');
+                                    }
+                                }}
                             >Eliminar</button>
                         </div>
                     </div>
