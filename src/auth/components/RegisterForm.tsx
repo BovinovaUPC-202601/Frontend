@@ -6,15 +6,53 @@ import { useAuthStore } from "../store/auth-store";
 
 export function RegisterForm() {
     const navigate = useNavigate();
-    const { user, setUser, register, error, isLoading } = useAuthStore();
+    const { user, setUser, setError, register, error, isLoading } = useAuthStore();
     const [showPassword, setShowPassword] = useState(false);
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [localError, setLocalError] = useState("");
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
+        setLocalError("");
+        if (error) setError(null);
         setUser({ [name]: value });
+    };
+
+    const displayError = localError || error;
+
+    const handleRegister = async () => {
+        if (!user.username?.trim()) {
+            setLocalError("El nombre es requerido.");
+            return;
+        }
+        if (!user.email?.trim()) {
+            setLocalError("El email es requerido.");
+            return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) {
+            setLocalError("Ingresa un email válido.");
+            return;
+        }
+        if (!user.password) {
+            setLocalError("La contraseña es requerida.");
+            return;
+        }
+        if (user.password !== confirmPassword) {
+            setLocalError("Las contraseñas no coinciden.");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const success = await register(confirmPassword);
+            if (success) {
+                navigate("/dashboard", { replace: true });
+            }
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -90,23 +128,13 @@ export function RegisterForm() {
                 </div>
             </div>
 
-            {error && <p className="text-[#D04A3A] text-xs font-inter">{error}</p>}
+            {displayError && <p className="text-[#D04A3A] text-xs font-inter">{displayError}</p>}
 
             <button
                 type="button"
                 disabled={isSubmitting || isLoading}
                 className="w-full h-14 bg-gradient-to-r from-[#10A065] to-[#0A7E4D] text-white font-inter text-sm font-semibold rounded-[14px] flex items-center justify-center gap-2 cursor-pointer transition-all duration-150 active:scale-[0.97] shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
-                onClick={async () => {
-                    setIsSubmitting(true);
-                    try {
-                        const success = await register(confirmPassword);
-                        if (success) {
-                            navigate("/dashboard", { replace: true });
-                        }
-                    } finally {
-                        setIsSubmitting(false);
-                    }
-                }}
+                onClick={handleRegister}
                 aria-busy={isSubmitting || isLoading}
             >
                 {isSubmitting || isLoading ? (

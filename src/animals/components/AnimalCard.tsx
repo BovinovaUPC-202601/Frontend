@@ -11,6 +11,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useGlobalStore } from "../../shared/stores/global-store";
 import { useAuthStore } from "../../auth/store/auth-store";
+import { canEdit } from "../../shared/utils/access-control";
 import { CollarSection } from "../../collars/components/CollarSection";
 import { Animal } from "../model/animal";
 import dayjs from "dayjs";
@@ -22,6 +23,7 @@ interface AnimalCardProps {
 export function AnimalCard({ animal }: AnimalCardProps) {
   const { deleteAnimal, updateAnimal, stables, breeds } = useGlobalStore();
   const isPlus = useAuthStore((s) => s.user.subscriptionPlan === "Plus");
+  const editable = useAuthStore((s) => canEdit(s.user));
 
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -34,21 +36,49 @@ export function AnimalCard({ animal }: AnimalCardProps) {
   const [editedMaxTemp, setEditedMaxTemp] = useState(animal.maxTemperature);
   const [editedMinHeart, setEditedMinHeart] = useState(animal.minHeartRate);
   const [editedMaxHeart, setEditedMaxHeart] = useState(animal.maxHeartRate);
+  const [editError, setEditError] = useState("");
 
   const handleSave = async () => {
-    await updateAnimal({
-      ...animal,
-      name: editedName,
-      gender: editedGender,
-      birthDate: editedBirthDate,
-      breed: editedBreed,
-      stableId: editedStableId,
-      minTemperature: editedMinTemp,
-      maxTemperature: editedMaxTemp,
-      minHeartRate: editedMinHeart,
-      maxHeartRate: editedMaxHeart,
-    });
-    setIsEditing(false);
+    setEditError("");
+
+    if (dayjs(editedBirthDate).isAfter(dayjs())) {
+      setEditError("La fecha de nacimiento no puede ser futura.");
+      return;
+    }
+
+    // Check stable capacity if stable changed
+    if (editedStableId !== animal.stableId) {
+      const selectedStable = stables.find((s) => s.id === editedStableId);
+      if (selectedStable && selectedStable.limit !== undefined) {
+        const animalsInStable = useGlobalStore.getState().animals.filter(
+          (a) => a.stableId === editedStableId && a.id !== animal.id,
+        ).length;
+        if (animalsInStable >= selectedStable.limit) {
+          setEditError(
+            "El establo seleccionado está lleno. Elegí otro o aumentá su capacidad.",
+          );
+          return;
+        }
+      }
+    }
+
+    try {
+      await updateAnimal({
+        ...animal,
+        name: editedName,
+        gender: editedGender,
+        birthDate: editedBirthDate,
+        breed: editedBreed,
+        stableId: editedStableId,
+        minTemperature: editedMinTemp,
+        maxTemperature: editedMaxTemp,
+        minHeartRate: editedMinHeart,
+        maxHeartRate: editedMaxHeart,
+      });
+      setIsEditing(false);
+    } catch (error: any) {
+      setEditError(error.message || "Error al actualizar el animal.");
+    }
   };
 
   const handleCancel = () => {
@@ -252,6 +282,12 @@ export function AnimalCard({ animal }: AnimalCardProps) {
             </div>
           </div>
 
+          {editError && (
+            <div className="text-[#D04A3A] text-xs text-center font-medium font-inter mt-2">
+              {editError}
+            </div>
+          )}
+
           {isPlus && <CollarSection bovineId={animal.id} />}
         </div>
       ) : (
@@ -288,22 +324,24 @@ export function AnimalCard({ animal }: AnimalCardProps) {
                     </span>
                   </div>
                 </div>
-                <div className="flex gap-1 shrink-0 ml-2">
-                  <button
-                    className="p-1.5 rounded-[8px] text-[#7E8F82] hover:text-[#10A065] hover:bg-[#C8F0DA] transition-all duration-150"
-                    onClick={() => setIsEditing(true)}
-                    title="Editar"
-                  >
-                    <EditIcon className="w-4 h-4" />
-                  </button>
-                  <button
-                    className="p-1.5 rounded-[8px] text-[#7E8F82] hover:text-[#D04A3A] hover:bg-[#FFD9D2] transition-all duration-150"
-                    onClick={() => setShowDeleteConfirm(true)}
-                    title="Eliminar"
-                  >
-                    <DeleteIcon className="w-4 h-4" />
-                  </button>
-                </div>
+                {editable && (
+                  <div className="flex gap-1 shrink-0 ml-2">
+                    <button
+                      className="p-1.5 rounded-[8px] text-[#7E8F82] hover:text-[#10A065] hover:bg-[#C8F0DA] transition-all duration-150"
+                      onClick={() => setIsEditing(true)}
+                      title="Editar"
+                    >
+                      <EditIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                      className="p-1.5 rounded-[8px] text-[#7E8F82] hover:text-[#D04A3A] hover:bg-[#FFD9D2] transition-all duration-150"
+                      onClick={() => setShowDeleteConfirm(true)}
+                      title="Eliminar"
+                    >
+                      <DeleteIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

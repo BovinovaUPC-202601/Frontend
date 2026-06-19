@@ -65,6 +65,9 @@ export function AddAnimalDialog() {
   const isBirthDateValid = newAnimal.birthDate
     ? !dayjs(newAnimal.birthDate).isAfter(dayjs())
     : false;
+  const birthDateError = newAnimal.birthDate && !isBirthDateValid
+    ? "La fecha de nacimiento no puede ser una fecha futura"
+    : "";
   const canSubmit =
     hasRequiredFields && isBirthDateValid && isThresholdValid && isRangeValid;
 
@@ -116,6 +119,22 @@ export function AddAnimalDialog() {
 
     setValidationError("");
     setIsSubmitting(true);
+
+    // Check stable capacity before submitting
+    const selectedStable = stables.find((s) => s.id === newAnimal.stableId);
+    if (selectedStable && selectedStable.limit !== undefined) {
+      const animalsInStable = useGlobalStore.getState().animals.filter(
+        (a) => a.stableId === newAnimal.stableId,
+      ).length;
+      if (animalsInStable >= selectedStable.limit) {
+        setValidationError(
+          "El establo seleccionado está lleno. Elegí otro o aumentá su capacidad.",
+        );
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     try {
       const created = await addAnimal(newAnimal);
 
@@ -133,6 +152,8 @@ export function AddAnimalDialog() {
       }
 
       handleClose();
+    } catch (error: any) {
+      setValidationError(error.message || "Error al crear el animal.");
     } finally {
       setIsSubmitting(false);
     }
@@ -236,6 +257,9 @@ export function AddAnimalDialog() {
               }}
               sx={{ width: "100%" }}
             />
+            {birthDateError && (
+              <span className="text-[#D04A3A] text-xs font-inter">{birthDateError}</span>
+            )}
           </div>
 
           {/* Raza */}
@@ -355,12 +379,12 @@ export function AddAnimalDialog() {
                   Collar IoT (opcional)
                 </label>
                 <span className="text-[11px] text-[#7E8F82] font-inter">
-                  {capacity.remaining}/{capacity.allowance} disponibles
+                  {capacity.available}/{capacity.allowance} disponibles
                 </span>
               </div>
               <select
                 id="deviceId"
-                disabled={capacity.remaining <= 0}
+                disabled={capacity.available <= 0}
                 className="focus:outline-none border border-[#E1E7DF] px-3 py-2.5 rounded-[10px] text-sm text-[#0E1A12] font-inter transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA] disabled:bg-[#F4F8F2] disabled:text-[#7E8F82]"
                 value={selectedCollar}
                 onChange={(e) =>
@@ -374,7 +398,7 @@ export function AddAnimalDialog() {
                   </option>
                 ))}
               </select>
-              {capacity.remaining <= 0 && (
+              {capacity.available <= 0 && (
                 <span className="text-[11px] text-[#7E8F82] font-inter italic">
                   Sin collares disponibles. Solicitá uno adicional en Suscripción.
                 </span>

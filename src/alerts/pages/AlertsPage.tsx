@@ -1,23 +1,50 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 import {Bell as NotificationsIcon} from "lucide-react";
 import { useAlertsStore } from "../stores/alerts-store";
 import { AlertCard } from "../components/AlertCard";
 import { useGlobalStore } from "../../shared/stores/global-store";
 
 export function AlertsPage() {
-    const { info, fetchInfo } = useGlobalStore();
+    const { info, fetchInfo, animals, fetchAnimals } = useGlobalStore();
     const { alerts, loading, fetchAlerts, markAsRead } = useAlertsStore();
+
+    // "all" shows every alert; otherwise filter to a single bovine.
+    const [selectedBovineId, setSelectedBovineId] = useState<number | "all">("all");
 
     useEffect(() => {
         fetchInfo();
+        fetchAnimals();
     }, []);
 
     useEffect(() => {
         if (info?.id) fetchAlerts(info.id);
     }, [info?.id]);
 
-    const unreadCount = alerts.filter(a => a.isUnread).length;
+    // Resolve a bovine id to a friendly name (falls back to the raw id).
+    const nameByBovineId = useMemo(() => {
+        const map = new Map<number, string>();
+        animals.forEach(a => map.set(a.id, a.name));
+        return map;
+    }, [animals]);
+
+    // Only offer bovines that actually have alerts, so the dropdown stays relevant.
+    const bovineOptions = useMemo(() => {
+        const ids = Array.from(new Set(alerts.map(a => a.bovineId).filter((id): id is number => id !== null)));
+        return ids
+            .map(id => ({ id, name: nameByBovineId.get(id) ?? `Bovino ${id}` }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+    }, [alerts, nameByBovineId]);
+
+    const visibleAlerts = selectedBovineId === "all"
+        ? alerts
+        : alerts.filter(a => a.bovineId === selectedBovineId);
+
+    const unreadCount = visibleAlerts.filter(a => a.isUnread).length;
 
     return (
         <div className="flex flex-col mx-20 gap-8 font-mulish">
@@ -31,22 +58,49 @@ export function AlertsPage() {
                 )}
             </div>
 
+            <div className="flex items-center gap-3">
+                <FormControl size="small" sx={{ minWidth: 240 }}>
+                    <InputLabel id="bovine-filter-label">Filtrar por bovino</InputLabel>
+                    <Select
+                        labelId="bovine-filter-label"
+                        label="Filtrar por bovino"
+                        value={selectedBovineId}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            setSelectedBovineId(value === "all" ? "all" : Number(value));
+                        }}
+                    >
+                        <MenuItem value="all">Todos los bovinos</MenuItem>
+                        {bovineOptions.map(option => (
+                            <MenuItem key={option.id} value={option.id}>
+                                {option.name}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+            </div>
+
             {loading && (
                 <div className="flex justify-center mt-4">
                     <CircularProgress size={32} />
                 </div>
             )}
 
-            {!loading && alerts.length === 0 && (
-                <p className="text-neutral-400 text-sm">Sin alertas registradas.</p>
+            {!loading && visibleAlerts.length === 0 && (
+                <p className="text-neutral-400 text-sm">
+                    {selectedBovineId === "all"
+                        ? "Sin alertas registradas."
+                        : "Este bovino no tiene alertas."}
+                </p>
             )}
 
             {!loading && (
                 <div className="flex flex-col gap-3">
-                    {alerts.map(alert => (
+                    {visibleAlerts.map(alert => (
                         <AlertCard
                             key={alert.id}
                             alert={alert}
+                            bovineName={alert.bovineId !== null ? nameByBovineId.get(alert.bovineId) : undefined}
                             onMarkAsRead={markAsRead}
                         />
                     ))}

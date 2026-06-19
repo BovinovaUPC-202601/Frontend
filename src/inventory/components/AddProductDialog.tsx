@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { useGlobalStore } from '../../shared/stores/global-store';
 import { useInventoryStore } from '../stores/inventory-store';
 import { useState } from 'react';
+import { PRODUCT_UNITS } from '../model/product-units';
 import {X as CloseIcon} from "lucide-react";
 import {Package as InventoryIcon} from "lucide-react";
 
@@ -29,11 +30,18 @@ export function AddProductDialog() {
             return;
         }
 
+        if (newProduct.expirationDate && dayjs(newProduct.expirationDate).isBefore(dayjs(), "day")) {
+            setValidationError("La fecha de vencimiento debe ser futura.");
+            return;
+        }
+
         setValidationError("");
         setIsSubmitting(true);
         try {
             await addProduct(newProduct);
             handleClose();
+        } catch (error: any) {
+            setValidationError(error.message || "Error al crear el producto.");
         } finally {
             setIsSubmitting(false);
         }
@@ -86,13 +94,17 @@ export function AddProductDialog() {
                         </div>
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="unit" className="text-sm font-medium text-[#0E1A12] font-inter">Unidad (opcional)</label>
-                            <input
-                                id="unit" type="text" autoComplete='off'
-                                placeholder="kg, cajas, litros"
-                                className="focus:outline-none border border-[#E1E7DF] px-3 py-2.5 rounded-[10px] text-sm text-[#0E1A12] font-inter placeholder-[#7E8F82] transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA]"
+                            <select
+                                id="unit"
                                 value={newProduct.unit || ""}
-                                onChange={(e) => { setValidationError(""); setNewProduct({ unit: e.target.value }); }}
-                            />
+                                onChange={(e) => { setValidationError(""); setNewProduct({ unit: e.target.value || undefined }); }}
+                                className={`focus:outline-none bg-white border border-[#E1E7DF] px-3 py-2.5 rounded-[10px] font-inter text-sm transition-all duration-200 focus:border-[#10A065] focus:ring-2 focus:ring-[#C8F0DA] ${!newProduct.unit ? "text-[#7E8F82]" : "text-[#0E1A12]"}`}
+                            >
+                                <option value="">Sin unidad</option>
+                                {PRODUCT_UNITS.map(u => (
+                                    <option key={u.value} value={u.value} className="text-[#0E1A12]">{u.label}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 

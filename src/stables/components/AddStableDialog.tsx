@@ -2,8 +2,8 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { useState } from "react";
 import { useGlobalStore } from "../../shared/stores/global-store";
 import { useStableStore } from "../stores/stable-store";
-import {X as CloseIcon} from "lucide-react";
-import {House as CabinIcon} from "lucide-react";
+import { X as CloseIcon } from "lucide-react";
+import { House as CabinIcon } from "lucide-react";
 
 export function AddStableDialog() {
   const { isOpenModal, toggleModal, newStable, setNewStable, resetNewStable } =
@@ -46,7 +46,9 @@ export function AddStableDialog() {
             <div className="w-9 h-9 rounded-full bg-[#C8F0DA] flex items-center justify-center text-[#10A065]">
               <CabinIcon className="w-5 h-5" />
             </div>
-            <h2 className="text-lg font-bold text-[#0E1A12] font-inter">Añadir establo</h2>
+            <h2 className="text-lg font-bold text-[#0E1A12] font-inter">
+              Añadir establo
+            </h2>
           </div>
           <button
             onClick={handleClose}
@@ -58,7 +60,12 @@ export function AddStableDialog() {
 
         <div className="px-6 py-5 flex flex-col gap-5">
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="name" className="text-sm font-medium text-[#0E1A12] font-inter">Nombre</label>
+            <label
+              htmlFor="name"
+              className="text-sm font-medium text-[#0E1A12] font-inter"
+            >
+              Nombre
+            </label>
             <input
               id="name"
               type="text"
@@ -74,7 +81,12 @@ export function AddStableDialog() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="limit" className="text-sm font-medium text-[#0E1A12] font-inter">Capacidad máxima</label>
+            <label
+              htmlFor="limit"
+              className="text-sm font-medium text-[#0E1A12] font-inter"
+            >
+              Capacidad máxima de bovinos
+            </label>
             <input
               id="limit"
               type="text"

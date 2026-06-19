@@ -4,6 +4,12 @@ import { User } from "../model/user";
 import { authService } from "../services/auth-service";
 import { useGlobalStore } from "../../shared/stores/global-store";
 
+type ApiError = {
+    response?: {
+        data?: unknown;
+    };
+};
+
 function loadUser(): User {
     try {
         const raw = localStorage.getItem("user");
@@ -13,7 +19,19 @@ function loadUser(): User {
 }
 
 function saveUser(user: User) {
-    localStorage.setItem("user", JSON.stringify({ username: user.username, email: user.email }));
+    localStorage.setItem("user", JSON.stringify({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        subscriptionPlan: user.subscriptionPlan,
+        isStaff: user.isStaff,
+        effectiveUserId: user.effectiveUserId,
+        accessLevel: user.accessLevel,
+        canRead: user.canRead,
+        canEdit: user.canEdit,
+        canManageStaff: user.canManageStaff,
+        canManageSubscription: user.canManageSubscription,
+    }));
 }
 
 function clearUser() {
@@ -23,11 +41,16 @@ function clearUser() {
 // Pulls the most useful message out of an axios error. Prefers the message the
 // API sent back ({ message } or a plain string body); falls back to a friendly
 // default so the user never sees a raw "Network Error".
-function extractApiErrorMessage(error: any, fallback: string): string {
-    const data = error?.response?.data;
+function extractApiErrorMessage(error: unknown, fallback: string): string {
+    const data = (error as ApiError)?.response?.data;
     if (data) {
         if (typeof data === "string" && data.trim()) return data;
-        if (typeof data.message === "string" && data.message.trim()) return data.message;
+        if (
+            typeof data === "object" &&
+            "message" in data &&
+            typeof data.message === "string" &&
+            data.message.trim()
+        ) return data.message;
     }
     return fallback;
 }
@@ -37,6 +60,7 @@ interface AuthState {
     error: string | null;
     isLoading: boolean;
     planLoaded: boolean;
+    permissionsLoaded: boolean;
     setUser: (user: Partial<User>) => void;
     setError: (error: string | null) => void;
     logout: () => void;
@@ -44,6 +68,12 @@ interface AuthState {
     login: () => Promise<boolean>;
     register: (confirmPassword: string) => Promise<boolean>;
 
+    /**
+     * Loads the real permissions (isStaff, accessLevel, canEdit, ...) from the
+     * backend profile. The values are never invented locally so access changes
+     * apply on the next load even with an old token.
+     */
+    fetchPermissions: () => Promise<void>;
 
     setSubscription: (plan: string) => void;
 }
@@ -53,6 +83,7 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
     error: null,
     isLoading: false,
     planLoaded: false,
+    permissionsLoaded: false,
     setUser: (user: Partial<User>) => set(state => { state.user = { ...state.user, ...user }; }),
     setError: (error: string | null) => set(state => { state.error = error; }),
     logout: () => {
@@ -63,6 +94,7 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
             state.error = null;
             state.isLoading = false;
             state.planLoaded = false;
+            state.permissionsLoaded = false;
         });
     },
     login: async () => {
@@ -72,9 +104,10 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
             const res = await authService.login(user);
             if (res.data.token) localStorage.setItem("token", res.data.token);
             saveUser(user);
+            await get().fetchPermissions();
             await useGlobalStore.getState().loadAppData();
             return true;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Login failed:", error);
             set(state => {
                 state.error = extractApiErrorMessage(
@@ -96,9 +129,10 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
             const res = await authService.register(user);
             if (res.data.token) localStorage.setItem("token", res.data.token);
             saveUser(user);
+            await get().fetchPermissions();
             await useGlobalStore.getState().loadAppData();
             return true;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Registration failed:", error);
             set(state => {
                 state.error = extractApiErrorMessage(
@@ -107,6 +141,50 @@ export const useAuthStore = create(immer<AuthState>((set, get) => ({
             return false;
         } finally {
             set(state => { state.isLoading = false; });
+        }
+    },
+    fetchPermissions: async () => {
+        try {
+            const res = await authService.getProfile();
+            const profile = res.data;
+            set(state => {
+                state.user = {
+                    ...state.user,
+                    id: profile.id,
+                    username: profile.name ?? state.user.username,
+                    email: profile.email ?? state.user.email,
+                    subscriptionPlan: profile.subscriptionPlan,
+                    isStaff: profile.isStaff,
+                    effectiveUserId: profile.effectiveUserId,
+                    accessLevel: profile.accessLevel,
+                    canRead: profile.canRead,
+                    canEdit: profile.canEdit,
+                    canManageStaff: profile.canManageStaff,
+                    canManageSubscription: profile.canManageSubscription,
+                };
+                state.permissionsLoaded = true;
+                // For staff the backend reports the OWNER's plan, so Plus features
+                // stay unlocked when the rancher is Plus. PlusRoute relies on this.
+                if (profile.isStaff) state.planLoaded = true;
+            });
+            saveUser(get().user);
+        } catch (error: unknown) {
+            console.error("Failed to load permissions:", error);
+            // Most restrictive defaults (e.g. inactive staff gets 403 here):
+            // nothing is editable and gated pages stay locked.
+            set(state => {
+                state.user = {
+                    ...state.user,
+                    isStaff: true,
+                    canRead: false,
+                    canEdit: false,
+                    canManageStaff: false,
+                    canManageSubscription: false,
+                };
+                state.permissionsLoaded = true;
+                state.error = extractApiErrorMessage(
+                    error, "No se pudieron cargar los permisos.");
+            });
         }
     },
     setSubscription: (plan: string) =>

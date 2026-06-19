@@ -2,7 +2,7 @@ import { jwtDecode } from "jwt-decode";
 
 interface JwtPayload {
     exp: number;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 export function isTokenValid(token: string | null): boolean {
@@ -11,7 +11,7 @@ export function isTokenValid(token: string | null): boolean {
     try {
         const decoded: JwtPayload = jwtDecode(token);
         return decoded.exp * 1000 > Date.now();
-    } catch (err) {
+    } catch {
         return false;
     }
 }

@@ -4,8 +4,13 @@ import { Info } from "../../dashboard/model/info";
 import { dashboardService } from "../../dashboard/services/dashboard-service";
 import { Stable } from "../../stables/model/stable";
 import { stableService } from "../../stables/services/stable-service";
-import { StaffStatus, type Staff } from "../../staff/model/staff";
-import { staffService } from "../../staff/services/staff-service";
+import { type Staff } from "../../staff/model/staff";
+import {
+    staffService,
+    type CreateStaffWithNewUserPayload,
+    type GrantAccessToExistingUserPayload,
+    type UpdateStaffAccessPayload,
+} from "../../staff/services/staff-service";
 import { Campaign } from "../../campaigns/model/campaign";
 import { campaignService } from "../../campaigns/services/campaigns-service";
 import { Category } from "../../inventory/model/Category";
@@ -14,6 +19,10 @@ import { inventoryService } from "../../inventory/services/inventory-service";
 import { Animal } from "../../animals/model/animal";
 import type { BovineBreed } from "../../animals/model/bovine-breed";
 import { animalsService } from "../../animals/services/animals-service";
+
+type StaffApiResponse = Staff & {
+    employeeStatus?: Staff["status"];
+};
 
 interface GlobalState {
     // Dashboard
@@ -29,6 +38,9 @@ interface GlobalState {
     addAnimal: (animal: Animal) => Promise<Animal | undefined>;
     deleteAnimal: (animal: Animal) => Promise<void>;
     updateAnimal: (animal: Animal) => Promise<void>;
+    addBreed: (breed: { name: string; minTemperature: number; maxTemperature: number; minHeartRate: number; maxHeartRate: number }) => Promise<void>;
+    updateBreed: (id: number, breed: { name: string; minTemperature: number; maxTemperature: number; minHeartRate: number; maxHeartRate: number }) => Promise<void>;
+    deleteBreed: (id: number) => Promise<void>;
 
     // Stables
     stables: Stable[];
@@ -47,9 +59,10 @@ interface GlobalState {
     // Staff
     staff: Staff[];
     fetchStaff: () => Promise<void>;
-    addStaff: (staff: Staff) => Promise<void>;
+    addStaffWithNewUser: (payload: CreateStaffWithNewUserPayload) => Promise<void>;
+    grantStaffAccessToExistingUser: (payload: GrantAccessToExistingUserPayload) => Promise<void>;
+    updateStaffAccess: (staff: Staff, payload: UpdateStaffAccessPayload) => Promise<void>;
     deleteStaff: (staff: Staff) => Promise<void>;
-    updateStaff: (staff: Staff) => Promise<void>;
 
     // Inventory
     categories: Category[];
@@ -118,43 +131,56 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
         }
     },
     addAnimal: async (animal: Animal) => {
-        try {
-            const res = await animalsService.addAnimal(animal);
-            if (res.data) {
-                const created = new Animal(res.data);
-                set((state) => {
-                    state.animals.push(created);
-                });
-                return created;
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await animalsService.addAnimal(animal);
+        if (res.data) {
+            const created = new Animal(res.data);
+            set((state) => {
+                state.animals.push(created);
+            });
+            return created;
         }
         return undefined;
     },
     deleteAnimal: async (animal: Animal) => {
-        try {
-            const res = await animalsService.deleteAnimal(animal);
-            if (res.status === 200) {
-                set((state) => {
-                    state.animals = state.animals.filter((a) => a.id != animal.id);
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await animalsService.deleteAnimal(animal);
+        if (res.status === 200) {
+            set((state) => {
+                state.animals = state.animals.filter((a) => a.id != animal.id);
+            });
         }
     },
     updateAnimal: async (animal: Animal) => {
-        try {
-            const res = await animalsService.updateAnimal(animal);
-            if (res.data) {
-                set((state) => {
-                    const index = state.animals.findIndex((a) => a.id === animal.id);
-                    if (index !== -1) state.animals[index] = new Animal(res.data);
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await animalsService.updateAnimal(animal);
+        if (res.data) {
+            set((state) => {
+                const index = state.animals.findIndex((a) => a.id === animal.id);
+                if (index !== -1) state.animals[index] = new Animal(res.data);
+            });
+        }
+    },
+    addBreed: async (breed) => {
+        const res = await animalsService.createBreed(breed);
+        if (res.data) {
+            set((state) => {
+                state.breeds.push(res.data);
+            });
+        }
+    },
+    updateBreed: async (id, breed) => {
+        const res = await animalsService.updateBreed(id, breed);
+        if (res.data) {
+            set((state) => {
+                const index = state.breeds.findIndex((b) => b.id === id);
+                if (index !== -1) state.breeds[index] = res.data;
+            });
+        }
+    },
+    deleteBreed: async (id) => {
+        const res = await animalsService.deleteBreed(id);
+        if (res.status === 200) {
+            set((state) => {
+                state.breeds = state.breeds.filter((b) => b.id !== id);
+            });
         }
     },
 
@@ -197,16 +223,12 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
         }
     },
     updateStable: async (stable: Stable) => {
-        try {
-            const res = await stableService.updateStable(stable);
-            if (res.data) {
-                set((state) => {
-                    const index = state.stables.findIndex((s) => s.id === stable.id);
-                    if (index !== -1) state.stables[index] = new Stable(res.data);
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await stableService.updateStable(stable);
+        if (res.data) {
+            set((state) => {
+                const index = state.stables.findIndex((s) => s.id === stable.id);
+                if (index !== -1) state.stables[index] = new Stable(res.data);
+            });
         }
     },
 
@@ -225,40 +247,28 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
         }
     },
     addCampaign: async (campaign) => {
-        try {
-            const res = await campaignService.addCampaign(campaign);
-            if (res.data) {
-                set((state) => {
-                    state.campaigns.push(new Campaign(res.data));
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await campaignService.addCampaign(campaign);
+        if (res.data) {
+            set((state) => {
+                state.campaigns.push(new Campaign(res.data));
+            });
         }
     },
     updateCampaign: async (campaign) => {
-        try {
-            const res = await campaignService.updateCampaign(campaign);
-            if (res.data) {
-                set((state) => {
-                    const index = state.campaigns.findIndex((c) => c.id === campaign.id);
-                    if (index !== -1) state.campaigns[index] = new Campaign(res.data);
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await campaignService.updateCampaign(campaign);
+        if (res.data) {
+            set((state) => {
+                const index = state.campaigns.findIndex((c) => c.id === campaign.id);
+                if (index !== -1) state.campaigns[index] = new Campaign(res.data);
+            });
         }
     },
     deleteCampaign: async (campaign) => {
-        try {
-            const res = await campaignService.deleteCampaign(campaign);
-            if (res.status === 200) {
-                set((state) => {
-                    state.campaigns = state.campaigns.filter((c) => c.id != campaign.id);
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await campaignService.deleteCampaign(campaign);
+        if (res.status === 200) {
+            set((state) => {
+                state.campaigns = state.campaigns.filter((c) => c.id != campaign.id);
+            });
         }
     },
 
@@ -268,7 +278,7 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
         try {
             const res = await staffService.getStaff();
             if (res.data) {
-                const mappedStaff: Staff[] = res.data.map((s: any) => ({
+                const mappedStaff: Staff[] = (res.data as StaffApiResponse[]).map((s) => ({
                     ...s,
                     status: s.employeeStatus
                 }));
@@ -278,40 +288,42 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
             console.error(error);
         }
     },
-    addStaff: async (staff) => {
-        try {
-            const newStaff: Staff = { ...staff, status: StaffStatus.Activo };
-            const res = await staffService.addStaff(newStaff);
-            if (res.data) {
-                const mappedStaff: Staff = { ...res.data, status: res.data.employeeStatus };
-                set((state) => {
-                    state.staff.push(mappedStaff);
-                });
-            }
-        } catch (error) {
-            console.error(error);
+    // The add/update staff flows rethrow so the dialog can show the API message
+    // (duplicate email, user not found, etc.) instead of failing silently.
+    addStaffWithNewUser: async (payload) => {
+        const res = await staffService.createStaffWithNewUser(payload);
+        if (res.data) {
+            const mappedStaff: Staff = { ...res.data, status: res.data.employeeStatus };
+            set((state) => {
+                state.staff.push(mappedStaff);
+            });
+        }
+    },
+    grantStaffAccessToExistingUser: async (payload) => {
+        const res = await staffService.grantAccessToExistingUser(payload);
+        if (res.data) {
+            const mappedStaff: Staff = { ...res.data, status: res.data.employeeStatus };
+            set((state) => {
+                state.staff.push(mappedStaff);
+            });
+        }
+    },
+    updateStaffAccess: async (staff, payload) => {
+        const res = await staffService.updateStaffAccess(staff.id!, payload);
+        if (res.data) {
+            const mappedStaff: Staff = { ...res.data, status: res.data.employeeStatus };
+            set((state) => {
+                const index = state.staff.findIndex((s) => s.id === staff.id);
+                if (index !== -1) state.staff[index] = mappedStaff;
+            });
         }
     },
     deleteStaff: async (staff) => {
         try {
             const res = await staffService.deleteStaff(staff);
-            if (res.status === 200) {
+            if (res.status === 204 || res.status === 200) {
                 set((state) => {
                     state.staff = state.staff.filter((s) => s.id != staff.id);
-                });
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    },
-    updateStaff: async (staff) => {
-        try {
-            const res = await staffService.updateStaff(staff);
-            if (res.data) {
-                const mappedStaff: Staff = { ...res.data, status: res.data.employeeStatus };
-                set((state) => {
-                    const index = state.staff.findIndex((s) => s.id === staff.id);
-                    if (index !== -1) state.staff[index] = mappedStaff;
                 });
             }
         } catch (error) {
@@ -381,28 +393,20 @@ export const useGlobalStore = create(immer<GlobalState>((set, get) => ({
         }
     },
     addProduct: async (product) => {
-        try {
-            const res = await inventoryService.createProduct(product);
-            if (res.data) {
-                set(state => {
-                    state.products.push(new Product(res.data));
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await inventoryService.createProduct(product);
+        if (res.data) {
+            set(state => {
+                state.products.push(new Product(res.data));
+            });
         }
     },
     updateProduct: async (product) => {
-        try {
-            const res = await inventoryService.updateProduct(product);
-            if (res.data) {
-                set((state) => {
-                    const index = state.products.findIndex((p) => p.id === product.id);
-                    if (index !== -1) state.products[index] = new Product(res.data);
-                });
-            }
-        } catch (error) {
-            console.error(error);
+        const res = await inventoryService.updateProduct(product);
+        if (res.data) {
+            set((state) => {
+                const index = state.products.findIndex((p) => p.id === product.id);
+                if (index !== -1) state.products[index] = new Product(res.data);
+            });
         }
     },
     deleteProduct: async (product) => {

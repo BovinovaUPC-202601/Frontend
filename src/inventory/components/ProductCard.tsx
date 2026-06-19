@@ -7,6 +7,8 @@ import {Tags as CategoryIcon} from "lucide-react";
 import { useState } from 'react';
 import { createPortal } from "react-dom";
 import { useGlobalStore } from "../../shared/stores/global-store";
+import { useAuthStore } from "../../auth/store/auth-store";
+import { canEdit } from "../../shared/utils/access-control";
 import type { Product } from '../model/Product';
 import dayjs from 'dayjs';
 import { EditProductDialog } from './EditProductDialog';
@@ -17,6 +19,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
     const { deleteProduct, categories } = useGlobalStore();
+    const editable = useAuthStore((s) => canEdit(s.user));
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -36,14 +39,16 @@ export function ProductCard({ product }: ProductCardProps) {
                                 <h3 className="text-[#0E1A12] text-base font-bold font-inter truncate">{product.name}</h3>
                                 <p className="text-[#4F6354] text-xs font-inter mt-0.5">{categoryName}</p>
                             </div>
-                            <div className="flex gap-1 shrink-0 ml-2">
-                                <button className="p-1.5 rounded-[8px] text-[#7E8F82] hover:text-[#10A065] hover:bg-[#C8F0DA] transition-all duration-150" onClick={() => setIsEditOpen(true)} title="Editar">
-                                    <EditIcon className="w-4 h-4" />
-                                </button>
-                                <button className="p-1.5 rounded-[8px] text-[#7E8F82] hover:text-[#D04A3A] hover:bg-[#FFD9D2] transition-all duration-150" onClick={() => setShowDeleteConfirm(true)} title="Eliminar">
-                                    <DeleteIcon className="w-4 h-4" />
-                                </button>
-                            </div>
+                            {editable && (
+                                <div className="flex gap-1 shrink-0 ml-2">
+                                    <button className="p-1.5 rounded-[8px] text-[#7E8F82] hover:text-[#10A065] hover:bg-[#C8F0DA] transition-all duration-150" onClick={() => setIsEditOpen(true)} title="Editar">
+                                        <EditIcon className="w-4 h-4" />
+                                    </button>
+                                    <button className="p-1.5 rounded-[8px] text-[#7E8F82] hover:text-[#D04A3A] hover:bg-[#FFD9D2] transition-all duration-150" onClick={() => setShowDeleteConfirm(true)} title="Eliminar">
+                                        <DeleteIcon className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -56,7 +61,16 @@ export function ProductCard({ product }: ProductCardProps) {
                         <div>
                             <span className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block">Cantidad</span>
                             <span className="text-[#0E1A12] text-sm font-medium font-inter">
-                                {product.quantity}{product.unit ? ` ${product.unit}` : ''}
+                                {product.quantity}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <ScaleIcon className="w-3.5 h-3.5 text-[#4F6354] shrink-0" />
+                        <div>
+                            <span className="text-[9px] text-[#7E8F82] font-inter uppercase tracking-wider block">Unidad</span>
+                            <span className="text-[#0E1A12] text-sm font-medium font-inter">
+                                {product.unit || "—"}
                             </span>
                         </div>
                     </div>

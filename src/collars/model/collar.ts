@@ -14,5 +14,5 @@ export interface Collar {
 export interface CollarCapacity {
     active: number;
     allowance: number;
-    remaining: number;
+    available: number;
 }

@@ -9,13 +9,31 @@ import {Megaphone as CampaignIcon} from "lucide-react";
 
 export function AddCampaignDialog() {
     const { isOpenModal, toggleModal, newCampaign, setNewCampaign, resetNewCampaign } = useCampaignsStore();
-    const { addCampaign } = useGlobalStore();
+    const { addCampaign, stables, animals } = useGlobalStore();
     const [validationError, setValidationError] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const selectedStableIds: number[] = newCampaign.stableIds ?? [];
+    const selectedBovineIds: number[] = newCampaign.bovineIds ?? [];
+    const hasTarget = selectedStableIds.length > 0 || selectedBovineIds.length > 0;
     const canSubmit = Boolean(newCampaign.name?.trim()) &&
         Boolean(newCampaign.description?.trim()) &&
         Boolean(newCampaign.startDate) &&
-        Boolean(newCampaign.endDate);
+        Boolean(newCampaign.endDate) &&
+        hasTarget;
+
+    const toggleStable = (id: number) => {
+        const next = selectedStableIds.includes(id)
+            ? selectedStableIds.filter(s => s !== id)
+            : [...selectedStableIds, id];
+        setNewCampaign({ stableIds: next });
+    };
+
+    const toggleBovine = (id: number) => {
+        const next = selectedBovineIds.includes(id)
+            ? selectedBovineIds.filter(s => s !== id)
+            : [...selectedBovineIds, id];
+        setNewCampaign({ bovineIds: next });
+    };
 
     const handleClose = () => {
         resetNewCampaign();
@@ -30,9 +48,19 @@ export function AddCampaignDialog() {
             return;
         }
 
+        if (!hasTarget) {
+            setValidationError("Selecciona al menos un establo o un bovino");
+            return;
+        }
+
         if (newCampaign.startDate && newCampaign.endDate &&
             newCampaign.startDate > newCampaign.endDate) {
             setValidationError("La fecha de inicio no puede ser posterior a la fecha de fin");
+            return;
+        }
+
+        if (newCampaign.endDate && dayjs(newCampaign.endDate).isBefore(dayjs(), "day")) {
+            setValidationError("La fecha de fin debe ser futura o igual al día actual.");
             return;
         }
 
@@ -41,6 +69,8 @@ export function AddCampaignDialog() {
         try {
             await addCampaign(newCampaign);
             handleClose();
+        } catch (error: any) {
+            setValidationError(error.message || "Error al crear la campaña.");
         } finally {
             setIsSubmitting(false);
         }
@@ -84,6 +114,62 @@ export function AddCampaignDialog() {
                             value={newCampaign.description || ""}
                             onChange={(e) => setNewCampaign({ description: e.target.value })}
                         />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-sm font-medium text-[#0E1A12] font-inter">Establos</label>
+                        <div className="border border-[#E1E7DF] rounded-[10px] p-3 flex flex-col gap-2 max-h-48 overflow-y-auto">
+                            {stables.length === 0 && (
+                                <span className="text-sm text-[#7E8F82] font-inter">No hay establos disponibles</span>
+                            )}
+                            {stables.map((stable) => (
+                                <label
+                                    key={stable.id}
+                                    className="flex items-center gap-2 cursor-pointer hover:bg-[#F4F8F2] px-2 py-1.5 rounded-[8px] transition-all duration-150"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        className="accent-[#10A065] w-4 h-4"
+                                        checked={selectedStableIds.includes(stable.id!)}
+                                        onChange={() => toggleStable(stable.id!)}
+                                    />
+                                    <span className="text-sm text-[#0E1A12] font-inter">{stable.name}</span>
+                                </label>
+                            ))}
+                        </div>
+                        {selectedStableIds.length > 0 && (
+                            <span className="text-xs text-[#7E8F82] font-inter">
+                                {selectedStableIds.length} seleccionado{selectedStableIds.length !== 1 ? "s" : ""}
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-sm font-medium text-[#0E1A12] font-inter">Bovinos</label>
+                        <div className="border border-[#E1E7DF] rounded-[10px] p-3 flex flex-col gap-2 max-h-48 overflow-y-auto">
+                            {animals.length === 0 && (
+                                <span className="text-sm text-[#7E8F82] font-inter">No hay bovinos disponibles</span>
+                            )}
+                            {animals.map((animal) => (
+                                <label
+                                    key={animal.id}
+                                    className="flex items-center gap-2 cursor-pointer hover:bg-[#F4F8F2] px-2 py-1.5 rounded-[8px] transition-all duration-150"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        className="accent-[#10A065] w-4 h-4"
+                                        checked={selectedBovineIds.includes(animal.id!)}
+                                        onChange={() => toggleBovine(animal.id!)}
+                                    />
+                                    <span className="text-sm text-[#0E1A12] font-inter">{animal.name}</span>
+                                </label>
+                            ))}
+                        </div>
+                        {selectedBovineIds.length > 0 && (
+                            <span className="text-xs text-[#7E8F82] font-inter">
+                                {selectedBovineIds.length} seleccionado{selectedBovineIds.length !== 1 ? "s" : ""}
+                            </span>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

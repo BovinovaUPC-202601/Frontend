@@ -12,18 +12,24 @@ export class CampaignService {
 
     async addCampaign(campaign: Campaign) {
         const data = {
-            ...campaign,
+            name: campaign.name,
+            description: campaign.description,
             startDate: dayjs(campaign.startDate).format('YYYY-MM-DD'),
             endDate: dayjs(campaign.endDate).format('YYYY-MM-DD'),
+            stableIds: campaign.stableIds ?? [],
+            bovineIds: campaign.bovineIds ?? [],
         }
         return await http.post<Campaign>(this.endpoint, data);
     }
 
     async updateCampaign(campaign: Campaign) {
         const data = {
-            ...campaign,
+            name: campaign.name,
+            description: campaign.description,
             startDate: dayjs(campaign.startDate).format('YYYY-MM-DD'),
             endDate: dayjs(campaign.endDate).format('YYYY-MM-DD'),
+            stableIds: campaign.stableIds ?? [],
+            bovineIds: campaign.bovineIds ?? [],
         };
         return await http.put<Campaign>(`${this.endpoint}/${campaign.id}`, data);
     }
