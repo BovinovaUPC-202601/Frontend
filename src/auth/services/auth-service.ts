@@ -17,6 +17,17 @@ export class AuthService {
     async getProfile() {
         return await http.get(this.endpoint + "/profile");
     }
+
+    // RF-03 step 1: request a 6-digit recovery code by email. The backend always
+    // responds 200 (even for unknown emails) so it never reveals who is registered.
+    async forgotPassword(email: string) {
+        return await http.post(this.endpoint + "/forgot-password", { email });
+    }
+
+    // RF-03 step 2: submit the emailed code and the new password.
+    async resetPassword(payload: { email: string; code: string; newPassword: string }) {
+        return await http.post(this.endpoint + "/reset-password", payload);
+    }
 }
 
 export const authService = new AuthService();

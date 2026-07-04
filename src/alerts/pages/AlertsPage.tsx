@@ -15,6 +15,8 @@ export function AlertsPage() {
 
     // "all" shows every alert; otherwise filter to a single bovine.
     const [selectedBovineId, setSelectedBovineId] = useState<number | "all">("all");
+    // RF-27: default to criticality so the most urgent alerts surface first.
+    const [sortBy, setSortBy] = useState<"urgency" | "recent">("urgency");
 
     useEffect(() => {
         fetchInfo();
@@ -43,6 +45,16 @@ export function AlertsPage() {
     const visibleAlerts = selectedBovineId === "all"
         ? alerts
         : alerts.filter(a => a.bovineId === selectedBovineId);
+
+    // Red (most critical) first, then Yellow, then the rest; ties broken by recency.
+    const sortedAlerts = useMemo(() => {
+        const rank = (level: string) => (level === "Red" ? 0 : level === "Yellow" ? 1 : 2);
+        return [...visibleAlerts].sort((a, b) =>
+            sortBy === "urgency"
+                ? rank(a.urgencyLevel) - rank(b.urgencyLevel) || b.createdAt.localeCompare(a.createdAt)
+                : b.createdAt.localeCompare(a.createdAt)
+        );
+    }, [visibleAlerts, sortBy]);
 
     const unreadCount = visibleAlerts.filter(a => a.isUnread).length;
 
@@ -78,6 +90,19 @@ export function AlertsPage() {
                         ))}
                     </Select>
                 </FormControl>
+
+                <FormControl size="small" sx={{ minWidth: 200 }}>
+                    <InputLabel id="sort-label">Ordenar por</InputLabel>
+                    <Select
+                        labelId="sort-label"
+                        label="Ordenar por"
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value as "urgency" | "recent")}
+                    >
+                        <MenuItem value="urgency">Criticidad</MenuItem>
+                        <MenuItem value="recent">Más recientes</MenuItem>
+                    </Select>
+                </FormControl>
             </div>
 
             {loading && (
@@ -96,7 +121,7 @@ export function AlertsPage() {
 
             {!loading && (
                 <div className="flex flex-col gap-3">
-                    {visibleAlerts.map(alert => (
+                    {sortedAlerts.map(alert => (
                         <AlertCard
                             key={alert.id}
                             alert={alert}

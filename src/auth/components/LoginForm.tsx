@@ -4,7 +4,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "../store/auth-store";
 
-export function LoginForm() {
+interface LoginFormProps {
+    /** Switch the auth screen to the password-recovery flow. */
+    onForgotPassword?: () => void;
+}
+
+export function LoginForm({ onForgotPassword }: LoginFormProps = {}) {
     const navigate = useNavigate();
     const { user, login, setUser, setError, error, isLoading } = useAuthStore();
     const [showPassword, setShowPassword] = useState(false);
@@ -81,6 +86,16 @@ export function LoginForm() {
                     </button>
                 </div>
             </div>
+
+            {onForgotPassword && (
+                <button
+                    type="button"
+                    className="text-sm text-[#0A7E4D] hover:underline w-fit self-end -mt-2"
+                    onClick={onForgotPassword}
+                >
+                    ¿Olvidaste tu contraseña?
+                </button>
+            )}
 
             {displayError && (
                 <span className="text-[#D04A3A] text-xs font-inter">{displayError}</span>
