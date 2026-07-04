@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useGlobalStore } from "../../shared/stores/global-store";
 import { DashboardCards } from "../components/DashboardCards";
+import { HealthSummary } from "../components/HealthSummary";
 import { NextCampaigns } from "../components/NextCampaigns";
 import {Mars as MaleIcon} from "lucide-react";
 import {Venus as FemaleIcon} from "lucide-react";
@@ -98,6 +99,8 @@ export function DashboardPage() {
               </div>
             </div>
           </div>
+
+          <HealthSummary />
 
           <DashboardCards />
         </div>
